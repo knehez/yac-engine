@@ -7,3 +7,11 @@
 ## Tools
     http://cinnamonchess.altervista.org/bitboard_calculator/Calc.html
 
+## Code Coverage
+
+### Setup
+    https://github.com/OpenCppCoverage/OpenCppCoverage
+    
+### Usage    
+    opencppcoverage --sources src -- yace_test.exe
+
