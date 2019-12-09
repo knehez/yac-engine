@@ -2,7 +2,6 @@
 
 Board::Board()
 {
-    static int d[64][64];
     clear();
 
     for (int x = a1; x < h8; x++)
@@ -80,6 +79,7 @@ Board::Board()
             }
         }
     }
+    color = WHITE;
 }
 
 void Board::clear()

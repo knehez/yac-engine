@@ -44,20 +44,21 @@ typedef struct Mask {
 	uint64_t file;
 } Mask;
 
+enum Color {WHITE, BLACK};
 
-enum ePieces
+enum Pieces
 {
     P,
-    R,
-    N,
-    B,
-    Q,
-    K,
     p,
+    R,
     r,
+    N,
     n,
+    B,
     b,
+    Q,
     q,
+    K,
     k,
     NumOfPieces
 };

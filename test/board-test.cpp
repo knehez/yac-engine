@@ -87,7 +87,7 @@ TEST(boardTest, rankAttack)
     board.setPiece(g1, 'P');
 
     auto pawns = board.getBoard('P');
-    // try to calculate row attack when a rock on d1
+    // try to calculate row attack when a rook on d1
     auto board1 = board.rankAttack(pawns, d1);
     EXPECT_EQ(board.showOneBitBoard(board1, a1, h1), "-XX-XXX-");
 
