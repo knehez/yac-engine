@@ -38,6 +38,7 @@ private:
     uint64_t attack(uint64_t pieces, Position pos, uint64_t mask);
     uint64_t knightMoves(int pos);
     uint64_t kingMoves(int pos);
+    uint64_t bishopMoves(int pos);
     void trimWhiteSpaces(std::string &str);
     
     int generate_rank_attack(int o, int f);

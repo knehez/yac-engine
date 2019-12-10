@@ -19,7 +19,7 @@ TEST(boardTest, emptyBoard)
 TEST(boardTest, fenBoard)
 {
     Board board;
-    board.setFENCode("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR");
+    board.setFENCode("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
     EXPECT_EQ(board.to_string(a8, h8), "rnbqkbnr");
     EXPECT_EQ(board.to_string(a7, h7), "pppppppp");
     EXPECT_EQ(board.to_string(a6, h6), "--------");
@@ -164,7 +164,6 @@ TEST(boardTest, fileAttack)
     EXPECT_EQ(board.showOneBitBoard(board1, a1, h1), "--------");
 }
 
-
 TEST(boardTest, possibleMovesKnight)
 {
     Board board;
@@ -231,4 +230,55 @@ TEST(boardTest, possibleMovesKnight)
     EXPECT_EQ(board.showOneBitBoard(b, a8, h8), "--------");
     EXPECT_EQ(board.showOneBitBoard(b, a7, h7), "-----X--");
     EXPECT_EQ(board.showOneBitBoard(b, a6, h6), "------X-");
+}
+
+TEST(boardTest, possibleMovesKnight2)
+{
+    // complex move from starting position
+    Board board;
+    board.setFENCode("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
+
+    auto b = board.allPossibleMoves(b1);
+    EXPECT_EQ(board.showOneBitBoard(b, a3, h3), "X-X-----");
+    EXPECT_EQ(board.showOneBitBoard(b, a2, h2), "--------");
+    EXPECT_EQ(board.showOneBitBoard(b, a1, h1), "--------");
+}
+
+TEST(boardTest, possibleMovesBishop)
+{
+    // complex move from starting position
+    Board board;
+    board.setFENCode("rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR w KQkq - 0 1");
+
+    auto b = board.allPossibleMoves(f1);
+    EXPECT_EQ(board.showOneBitBoard(b, a6, h6), "X-------");
+    EXPECT_EQ(board.showOneBitBoard(b, a5, h5), "-X------");
+    EXPECT_EQ(board.showOneBitBoard(b, a4, h4), "--X-----");
+    EXPECT_EQ(board.showOneBitBoard(b, a3, h3), "---X----");
+    EXPECT_EQ(board.showOneBitBoard(b, a2, h2), "----X---");
+    EXPECT_EQ(board.showOneBitBoard(b, a1, h1), "--------");
+
+    // more complex case with a white bishop
+    board.setFENCode("rnbqkbnr/p1ppp1pp/1p3p2/8/3BP3/2P5/PPP2PPP/RNBQK1NR w KQkq - 0 1");
+    b = board.allPossibleMoves(d4);
+    EXPECT_EQ(board.showOneBitBoard(b, a8, h8), "--------");
+    EXPECT_EQ(board.showOneBitBoard(b, a7, h7), "--------");
+    EXPECT_EQ(board.showOneBitBoard(b, a6, h6), "-X---X--");
+    EXPECT_EQ(board.showOneBitBoard(b, a5, h5), "--X-X---");
+    EXPECT_EQ(board.showOneBitBoard(b, a4, h4), "--------");
+    EXPECT_EQ(board.showOneBitBoard(b, a3, h3), "----X---");
+    EXPECT_EQ(board.showOneBitBoard(b, a2, h2), "--------");
+    EXPECT_EQ(board.showOneBitBoard(b, a1, h1), "--------");
+
+    // complex case with a black bishop
+    board.setFENCode("rnbqk1nr/p1pppppp/1p6/4b3/4P3/2P1B3/PPP2PPP/RNBQK1NR b KQkq - 0 1");
+    b = board.allPossibleMoves(e5);
+    EXPECT_EQ(board.showOneBitBoard(b, a8, h8), "--------");
+    EXPECT_EQ(board.showOneBitBoard(b, a7, h7), "--------");
+    EXPECT_EQ(board.showOneBitBoard(b, a6, h6), "---X-X--");
+    EXPECT_EQ(board.showOneBitBoard(b, a5, h5), "--------");
+    EXPECT_EQ(board.showOneBitBoard(b, a4, h4), "---X-X--");
+    EXPECT_EQ(board.showOneBitBoard(b, a3, h3), "--X---X-");
+    EXPECT_EQ(board.showOneBitBoard(b, a2, h2), "-------X");
+    EXPECT_EQ(board.showOneBitBoard(b, a1, h1), "--------");
 }
