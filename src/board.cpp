@@ -19,7 +19,7 @@ Board::Board()
 
         MASK[x].diagonal = 0;
         // file diagonal bits UP
-        for (int i = x; i < h8; i += 9)
+        for (int i = x; i <= h8; i += 9)
         {
             MASK[x].diagonal |= 1ULL << i;
             file++;
@@ -52,7 +52,7 @@ Board::Board()
         // file antidiagonal bits up
         file = x & 7;
         rank = x >> 3;
-        for (int i = x; i < h8; i += 7)
+        for (int i = x; i <= h8; i += 7)
         {
             MASK[x].antidiagonal |= 1ULL << i;
             file--;
@@ -67,7 +67,7 @@ Board::Board()
         file = x & 7;
         rank = x >> 3;
         // file antidiagonal bits down
-        for (int i = x; i < h8; i -= 7)
+        for (int i = x; i >= a1; i -= 7)
         {
             MASK[x].antidiagonal |= 1ULL << i;
             file++;
@@ -233,7 +233,18 @@ void Board::setFENCode(std::string fenCode)
             boardPos = 8 * rowNumber;
             continue;
         }
+
+        if (c == ' ')
+        {
+            break;
+        }
         boardPos++;
+    }
+    // w or b after the first space
+    auto index = fenCode.find(' ');
+    if (index != std::string::npos)
+    {
+        fenCode[index + 1] == 'w' ? color = WHITE : color = BLACK;
     }
 }
 
@@ -256,12 +267,29 @@ uint64_t Board::allPossibleMoves(int pos)
     switch (piece)
     {
     case 'N':
-        return knightMoves(pos);
+    case 'n':
+        return knightMoves(pos) & (color == WHITE ? ~getWhitePiecesBoard() : ~getBlackPiecesBoard());
+    case 'B':
+    case 'b':
+        return bishopMoves(pos) & (color == WHITE ? ~getWhitePiecesBoard() : ~getBlackPiecesBoard());
     case 'K':
+    case 'k':
         return kingMoves(pos);
     default:
         return 0;
     }
+}
+
+uint64_t Board::bishopMoves(int pos)
+{
+    auto allPiecesAsBitmap = getWhitePiecesBoard() | getBlackPiecesBoard();
+    auto notBishopAtPosition = ~(1LLU << (Position)pos);
+
+    uint64_t diagonal = diagonalAttack((allPiecesAsBitmap & notBishopAtPosition), (Position)pos);
+
+    uint64_t antiDiagonal = antidiagonalAttack(allPiecesAsBitmap & notBishopAtPosition, (Position)pos);
+
+    return diagonal | antiDiagonal & (color == WHITE ? ~getWhitePiecesBoard() : ~getBlackPiecesBoard());
 }
 
 uint64_t Board::knightMoves(int pos)
