@@ -41,6 +41,11 @@ private:
     uint64_t bishopMoves(int pos);
     uint64_t pawnMoves(int pos);
     uint64_t rookMoves(int pos);
+    uint64_t pawnBlackMoves(int pos);
+    uint64_t pawnBlackHitMoves(int pos);
+    uint64_t pawnWhiteHitMoves(int pos);
+    uint64_t pawnWhiteMoves(int pos);
+    
     void trimWhiteSpaces(std::string &str);
     
     int generate_rank_attack(int o, int f);

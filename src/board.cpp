@@ -276,8 +276,9 @@ uint64_t Board::allPossibleMoves(int pos)
     case 'k':
         return kingMoves(pos);
     case 'P':
+        return pawnWhiteMoves(pos) | pawnWhiteHitMoves(pos);
     case 'p':
-        // return pawn;
+        return pawnBlackMoves(pos) | pawnBlackHitMoves(pos);
     case 'R':
     case 'r':
         return rookMoves(pos);
@@ -294,8 +295,8 @@ uint64_t Board::rookMoves(int pos)
     auto allPiecesAsBitmap = getWhitePiecesBoard() | getBlackPiecesBoard();
     auto removeRookAtPosition = ~(1LLU << (Position)pos);
 
-    uint64_t rank = rankAttack(allPiecesAsBitmap & removeRookAtPosition, (Position) pos);
-    uint64_t file = fileAttack(allPiecesAsBitmap & removeRookAtPosition, (Position) pos);
+    uint64_t rank = rankAttack(allPiecesAsBitmap & removeRookAtPosition, (Position)pos);
+    uint64_t file = fileAttack(allPiecesAsBitmap & removeRookAtPosition, (Position)pos);
     return (rank | file) & (color == WHITE ? ~getWhitePiecesBoard() : ~getBlackPiecesBoard());
 }
 
@@ -323,6 +324,42 @@ uint64_t Board::knightMoves(int pos)
     ret |= KNIGHT_SOUTH_EAST(tmp) & notHFile;
     ret |= KNIGHT_SOUTH_WEST(tmp) & notAFile;
     return ret & (color == WHITE ? ~getWhitePiecesBoard() : ~getBlackPiecesBoard());
+}
+
+uint64_t Board::pawnBlackMoves(int pos)
+{
+    uint64_t tmp = 1LLU << pos;
+    // move south if there is not any pieces in front of the pawn
+    uint64_t ret = SOUTH(tmp) & ~(getWhitePiecesBoard() | getBlackPiecesBoard());
+    // pawn can move 2 squares if it is on the second row () (0xff00000000)
+    ret |= SOUTH_TWO(tmp) & 0xff00000000; // row 'f'
+    return ret;
+}
+
+uint64_t Board::pawnBlackHitMoves(int pos)
+{
+    uint64_t tmp = 1LLU << pos;
+    // move south if there is not any pieces in front of the pawn
+    uint64_t ret = ((SOUTH_EAST(tmp) & notHFile) | (SOUTH_WEST(tmp) & notAFile)) & (color == BLACK ? getWhitePiecesBoard() : getBlackPiecesBoard());
+    return ret;
+}
+
+uint64_t Board::pawnWhiteHitMoves(int pos)
+{
+    uint64_t tmp = 1LLU << pos;
+    // move south if there is not any pieces in front of the pawn
+    uint64_t ret = ( (NORTH_EAST(tmp) & notAFile) | (NORTH_WEST(tmp) & notHFile)) & (color == BLACK ? getWhitePiecesBoard() : getBlackPiecesBoard());
+    return ret;
+}
+
+uint64_t Board::pawnWhiteMoves(int pos)
+{
+    uint64_t tmp = 1LLU << pos;
+    // move north if there is not any pieces in front of the pawn
+    uint64_t ret = NORTH(tmp) & ~(getWhitePiecesBoard() | getBlackPiecesBoard());
+    // pawn can move 2 squares if it is on the second row (0xff000000)
+    ret |= NORTH_TWO(tmp) & 0xff000000; // row 'e'
+    return ret;
 }
 
 uint64_t Board::kingMoves(int pos)

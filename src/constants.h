@@ -26,6 +26,9 @@ const uint64_t FILES[8] = {AFILE, BFILE, CFILE, DFILE, EFILE, FFILE, GFILE, HFIL
 #define SOUTH_WEST(b) b >> 9
 #define SOUTH_EAST(b) b >> 7
 
+#define NORTH_TWO(b) b << 16
+#define SOUTH_TWO(b) b >> 16
+
 #define KNIGHT_NORTH_EAST(b) b << 17
 #define KNIGHT_NORTH_WEST(b) b << 15
 #define KNIGHT_EAST_NORTH(b) b << 10
