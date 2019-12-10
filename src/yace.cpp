@@ -4,11 +4,12 @@
 int main()
 {
 	// complex move from starting position
-	Board board;
-	board.setFENCode("rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR w KQkq - 0 1");
+    Board board;
+    board.setFENCode("rnb1kbnr/p1pp1ppp/8/1p4p1/3B1q2/8/PPPPPPPP/RNBQK1N1 b Qkq - 2 2");
 
-	auto b = board.allPossibleMoves(f1);
+    auto b = board.allPossibleMoves(f4);
 	auto str = board.showOneBitBoard(b, a1, h8);
+
 	std::cout << str;
 	return 0;
 }

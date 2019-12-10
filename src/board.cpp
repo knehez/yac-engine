@@ -268,16 +268,35 @@ uint64_t Board::allPossibleMoves(int pos)
     {
     case 'N':
     case 'n':
-        return knightMoves(pos) & (color == WHITE ? ~getWhitePiecesBoard() : ~getBlackPiecesBoard());
+        return knightMoves(pos);
     case 'B':
     case 'b':
-        return bishopMoves(pos) & (color == WHITE ? ~getWhitePiecesBoard() : ~getBlackPiecesBoard());
+        return bishopMoves(pos);
     case 'K':
     case 'k':
         return kingMoves(pos);
+    case 'P':
+    case 'p':
+        // return pawn;
+    case 'R':
+    case 'r':
+        return rookMoves(pos);
+    case 'Q':
+    case 'q':
+        return rookMoves(pos) | bishopMoves(pos);
     default:
         return 0;
     }
+}
+
+uint64_t Board::rookMoves(int pos)
+{
+    auto allPiecesAsBitmap = getWhitePiecesBoard() | getBlackPiecesBoard();
+    auto removeRookAtPosition = ~(1LLU << (Position)pos);
+
+    uint64_t rank = rankAttack(allPiecesAsBitmap & removeRookAtPosition, (Position) pos);
+    uint64_t file = fileAttack(allPiecesAsBitmap & removeRookAtPosition, (Position) pos);
+    return (rank | file) & (color == WHITE ? ~getWhitePiecesBoard() : ~getBlackPiecesBoard());
 }
 
 uint64_t Board::bishopMoves(int pos)
@@ -289,7 +308,7 @@ uint64_t Board::bishopMoves(int pos)
 
     uint64_t antiDiagonal = antidiagonalAttack(allPiecesAsBitmap & notBishopAtPosition, (Position)pos);
 
-    return diagonal | antiDiagonal & (color == WHITE ? ~getWhitePiecesBoard() : ~getBlackPiecesBoard());
+    return (diagonal | antiDiagonal) & (color == WHITE ? ~getWhitePiecesBoard() : ~getBlackPiecesBoard());
 }
 
 uint64_t Board::knightMoves(int pos)
@@ -303,7 +322,7 @@ uint64_t Board::knightMoves(int pos)
     ret |= KNIGHT_WEST_SOUTH(tmp) & notGHFile;
     ret |= KNIGHT_SOUTH_EAST(tmp) & notHFile;
     ret |= KNIGHT_SOUTH_WEST(tmp) & notAFile;
-    return ret;
+    return ret & (color == WHITE ? ~getWhitePiecesBoard() : ~getBlackPiecesBoard());
 }
 
 uint64_t Board::kingMoves(int pos)
@@ -317,7 +336,7 @@ uint64_t Board::kingMoves(int pos)
     ret |= NORTH_WEST(tmp) & notAFile;
     ret |= SOUTH_EAST(tmp) & notHFile;
     ret |= SOUTH_WEST(tmp) & notAFile;
-    return ret;
+    return ret & (color == WHITE ? ~getWhitePiecesBoard() : ~getBlackPiecesBoard());
 }
 
 std::string Board::showOneBitBoard(uint64_t board, int startPos, int endPos)

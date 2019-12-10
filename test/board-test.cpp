@@ -78,6 +78,31 @@ TEST(boardTest, possibleMovesKing)
     EXPECT_EQ(board.showOneBitBoard(b, a3, h3), "--------");
 }
 
+TEST(boardTest, possibleMovesKingComplex)
+{
+    Board board;
+    board.setFENCode("rnbqkbnr/pppppppp/8/8/4P3/5P2/PPPP2PP/RNBQKBNR w KQkq - 0 1");
+    auto b = board.allPossibleMoves(e1);
+    EXPECT_EQ(board.showOneBitBoard(b, a3, h3), "--------");
+    EXPECT_EQ(board.showOneBitBoard(b, a2, h2), "----XX--");
+    EXPECT_EQ(board.showOneBitBoard(b, a1, h1), "--------");
+}
+
+TEST(boardTest, possibleMovesRookComplex)
+{
+    Board board;
+    board.setFENCode("rnbqkbnr/pppp1ppp/8/3Rp3/2B1P3/5N2/PPPP1PPP/RNBQK3 w Qkq - 2 2");
+    auto b = board.allPossibleMoves(d5);
+    EXPECT_EQ(board.showOneBitBoard(b, a8, h8), "--------");
+    EXPECT_EQ(board.showOneBitBoard(b, a7, h7), "---X----");
+    EXPECT_EQ(board.showOneBitBoard(b, a6, h6), "---X----");
+    EXPECT_EQ(board.showOneBitBoard(b, a5, h5), "XXX-X---");
+    EXPECT_EQ(board.showOneBitBoard(b, a4, h4), "---X----");
+    EXPECT_EQ(board.showOneBitBoard(b, a3, h3), "---X----");
+    EXPECT_EQ(board.showOneBitBoard(b, a2, h2), "--------");
+    EXPECT_EQ(board.showOneBitBoard(b, a1, h1), "--------");
+}
+
 TEST(boardTest, rankAttack)
 {
     Board board;
@@ -241,6 +266,23 @@ TEST(boardTest, possibleMovesKnight2)
     auto b = board.allPossibleMoves(b1);
     EXPECT_EQ(board.showOneBitBoard(b, a3, h3), "X-X-----");
     EXPECT_EQ(board.showOneBitBoard(b, a2, h2), "--------");
+    EXPECT_EQ(board.showOneBitBoard(b, a1, h1), "--------");
+}
+
+TEST(boardTest, possibleMovesQueenComplex)
+{
+    // complex move from starting position
+    Board board;
+    board.setFENCode("rnb1kbnr/p1pp1ppp/8/1p4p1/3B1q2/8/PPPPPPPP/RNBQK1N1 b Qkq - 2 2");
+
+    auto b = board.allPossibleMoves(f4);
+    EXPECT_EQ(board.showOneBitBoard(b, a8, h8), "--------");
+    EXPECT_EQ(board.showOneBitBoard(b, a7, h7), "--------");
+    EXPECT_EQ(board.showOneBitBoard(b, a6, h6), "---X-X--");
+    EXPECT_EQ(board.showOneBitBoard(b, a5, h5), "----XX--");
+    EXPECT_EQ(board.showOneBitBoard(b, a4, h4), "---XX-XX");
+    EXPECT_EQ(board.showOneBitBoard(b, a3, h3), "----XXX-");
+    EXPECT_EQ(board.showOneBitBoard(b, a2, h2), "---X-X-X");
     EXPECT_EQ(board.showOneBitBoard(b, a1, h1), "--------");
 }
 
