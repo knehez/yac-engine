@@ -4,14 +4,17 @@ Board::Board()
 {
     clear();
 
-    for (int x = a1; x < h8; x++)
+    for (int x = a1; x <= h8; x++)
     {
-        // http://cinnamonchess.altervista.org/bitboard_calculator/Calc.html
-
         for (int f = 0; f < 8; f++)
         {
             RANK_ATTACK[x * 8 + f] = generate_rank_attack(x * 2, f);
         }
+    }
+
+    for (int x = a1; x < h8; x++)
+    {
+        // http://cinnamonchess.altervista.org/bitboard_calculator/Calc.html
         int file = x & 7;
         int rank = x >> 3;
 
@@ -82,6 +85,18 @@ Board::Board()
     color = WHITE;
 }
 
+int Board::nextSquare(uint64_t *board)
+{
+    if (board == 0)
+    {
+        return -1;
+    }
+    unsigned long index;
+    _BitScanForward64(&index, *board);
+    *board &= *board - 1;
+    return (int)index;
+}
+
 void Board::clear()
 {
     for (int i = 0; i < NumOfPieces; i++)
@@ -104,7 +119,7 @@ void Board::setPiece(int pos, char piece)
 {
     for (int i = 0; i < NumOfPieces; i++)
     {
-        if (piece == m_pieces[i])
+        if (piece == piecesChars[i])
         {
             m_boards[i] |= 1LLU << pos;
             break;
@@ -148,7 +163,7 @@ uint64_t Board::getBoard(char piece)
 {
     for (int i = 0; i < NumOfPieces; i++)
     {
-        if (piece == m_pieces[i])
+        if (piece == piecesChars[i])
         {
             return m_boards[i];
         }
@@ -169,7 +184,7 @@ std::string Board::getFENCode()
         {
             if (m_boards[j] & (1LLU << boardPos))
             {
-                fen += m_pieces[j];
+                fen += piecesChars[j];
                 found = true;
                 break;
             }
@@ -221,7 +236,7 @@ void Board::setFENCode(std::string fenCode)
         }
         for (int i = 0; i < NumOfPieces; i++)
         {
-            if (c == m_pieces[i])
+            if (c == piecesChars[i])
             {
                 m_boards[i] |= (1LLU << boardPos);
                 break;
@@ -254,13 +269,58 @@ char Board::getPiece(int pos)
     {
         if (m_boards[j] & (1LLU << pos))
         {
-            return m_pieces[j];
+            return piecesChars[j];
         }
     }
     return '-';
 }
 
-uint64_t Board::allPossibleMoves(int pos)
+std::string Board::getMoves()
+{
+    std::string moves;
+
+    uint64_t board;
+    color == WHITE ? board = getWhitePiecesBoard() : board = getBlackPiecesBoard();
+
+    while (board)
+    {
+        int piecePos = nextSquare(&board);
+        
+        auto tmpBoard = allPieceMoves(piecePos);
+        
+        if (tmpBoard != 0)
+        {
+            int tmpPos;
+            while (tmpPos = nextSquare(&tmpBoard))
+            {
+                moves += algebraicFile(piecePos);
+                moves += algebraicRank(piecePos);
+                moves += algebraicFile(tmpPos);
+                moves += algebraicRank(tmpPos);
+                moves += '|';
+            }
+        }
+    }
+    return moves;
+}
+
+uint64_t Board::getCheckers(Position kingPos, Color color) {
+    auto oppositeKnights = m_boards[N + !color];
+    auto oppositePawns = m_boards[P + !color];
+    auto oppositeBishops = m_boards[B + !color];
+    auto oppositeRookQueen = m_boards[Q + !color];
+    auto oppositeBishopQueen = oppositeRookQueen;
+    oppositeRookQueen |= m_boards[R + !color];
+    oppositeBishopQueen |= m_boards[B + !color];
+
+    return knightMoves(kingPos) & oppositeKnights |
+           (color == BLACK? pawnBlackHitMoves(kingPos) : pawnWhiteHitMoves(kingPos)) & oppositePawns |
+           bishopMoves(kingPos) & oppositeBishopQueen |
+           rookMoves(kingPos) & oppositeRookQueen;
+}
+
+
+uint64_t Board::allPieceMoves(int pos)
 {
     char piece = getPiece(pos);
 
@@ -348,7 +408,7 @@ uint64_t Board::pawnWhiteHitMoves(int pos)
 {
     uint64_t tmp = 1LLU << pos;
     // move south if there is not any pieces in front of the pawn
-    uint64_t ret = ( (NORTH_EAST(tmp) & notAFile) | (NORTH_WEST(tmp) & notHFile)) & (color == BLACK ? getWhitePiecesBoard() : getBlackPiecesBoard());
+    uint64_t ret = ((NORTH_EAST(tmp) & notAFile) | (NORTH_WEST(tmp) & notHFile)) & (color == BLACK ? getWhitePiecesBoard() : getBlackPiecesBoard());
     return ret;
 }
 
@@ -421,7 +481,7 @@ std::string Board::to_string(int startPos, int endPos)
         {
             if (m_boards[j] & (1LLU << boardPos))
             {
-                out += m_pieces[j];
+                out += piecesChars[j];
                 // do not find an other one if we already found one
                 found = true;
                 break;

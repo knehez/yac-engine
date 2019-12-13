@@ -40,14 +40,23 @@ const uint64_t FILES[8] = {AFILE, BFILE, CFILE, DFILE, EFILE, FFILE, GFILE, HFIL
 
 #define countBits(b) __popcnt64(b)
 #define bit_bswap(b) _byteswap_uint64(b)
+#define algebraicFile(pos) 'a' + (pos & 7)
+#define algebraicRank(pos) '1' + (pos >> 3)
 
-typedef struct Mask {
-	uint64_t diagonal;
-	uint64_t antidiagonal;
-	uint64_t file;
+typedef struct Mask
+{
+    uint64_t diagonal;
+    uint64_t antidiagonal;
+    uint64_t file;
 } Mask;
 
-enum Color {WHITE, BLACK};
+enum Color
+{
+    WHITE,
+    BLACK
+};
+
+const char piecesChars[] = "PpRrNnBbQqKk";
 
 enum Pieces
 {
