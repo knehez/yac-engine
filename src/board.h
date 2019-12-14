@@ -3,6 +3,14 @@
 #include "constants.h"
 #include "gtest/gtest_prod.h"
 
+
+typedef struct move{
+    Position start;
+    Position end;
+    Piece piece;
+    Piece promotion = NUMBER_OF_PIECES;
+} Move;
+
 class Board
 {
 public:
@@ -11,9 +19,12 @@ public:
     void setFENCode(std::string fenstr);
     std::string getFENCode();
 
-    void setPiece(int pos, char piece);
-    char getPiece(int pos);
+    void move(Move);
+    void undoMove(Move);
 
+    void setPiece(int pos, char piece);
+    Piece getPieceAt(Position pos);
+    Position getPiecePos(Piece piece);
     uint64_t getWhitePiecesBoard();
     uint64_t getBlackPiecesBoard();
 
@@ -48,7 +59,7 @@ private:
     uint64_t pawnWhiteMoves(int pos);
 
     FRIEND_TEST(moveTest, whiteCheckers);
-    uint64_t getCheckers(Position, Color);
+    uint64_t getCheckers();
     
     void trimWhiteSpaces(std::string &str);
 
@@ -58,7 +69,7 @@ private:
     
     // DATA
     Mask MASK[h8];
-    uint64_t m_boards[NumOfPieces];
+    uint64_t m_boards[NUMBER_OF_PIECES];
     uint8_t RANK_ATTACK[512];
     Color color;
 };

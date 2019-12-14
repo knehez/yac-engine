@@ -38,10 +38,12 @@ const uint64_t FILES[8] = {AFILE, BFILE, CFILE, DFILE, EFILE, FFILE, GFILE, HFIL
 #define KNIGHT_SOUTH_EAST(b) b >> 15
 #define KNIGHT_SOUTH_WEST(b) b >> 17
 
+#define bitScan64(index, board) _BitScanForward64(&index, *board)
 #define countBits(b) __popcnt64(b)
 #define bit_bswap(b) _byteswap_uint64(b)
 #define algebraicFile(pos) 'a' + (pos & 7)
 #define algebraicRank(pos) '1' + (pos >> 3)
+#define oppositeColor(c) c == WHITE ? BLACK : WHITE
 
 typedef struct Mask
 {
@@ -58,7 +60,7 @@ enum Color
 
 const char piecesChars[] = "PpRrNnBbQqKk";
 
-enum Pieces
+enum Piece
 {
     P,
     p,
@@ -72,7 +74,7 @@ enum Pieces
     q,
     K,
     k,
-    NumOfPieces
+    NUMBER_OF_PIECES
 };
 
 enum Position
@@ -140,5 +142,6 @@ enum Position
     e8,
     f8,
     g8,
-    h8
+    h8,
+    NUMBER_OF_SQUARES
 };

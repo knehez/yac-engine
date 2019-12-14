@@ -23,10 +23,8 @@ TEST(moveTest, whiteCheckers)
 {
     Board board;
     board.setFENCode("1Q3B2/8/R2k4/2P1PN2/8/8/8/8 b - - 0 1");
-    auto kingBoard = board.getBoard('k');
-    auto kingPos = board.nextSquare(&kingBoard);
-    
-    auto b = board.getCheckers((Position)kingPos, board.color);
+
+    auto b = board.getCheckers();
 
     EXPECT_EQ(board.showOneBitBoard(b, a8, h8), "-X---X--");
     EXPECT_EQ(board.showOneBitBoard(b, a7, h7), "--------");
@@ -35,4 +33,12 @@ TEST(moveTest, whiteCheckers)
     EXPECT_EQ(board.showOneBitBoard(b, a4, h4), "--------");
     EXPECT_EQ(board.showOneBitBoard(b, a3, h3), "--------");
     EXPECT_EQ(board.showOneBitBoard(b, a2, h2), "--------");
+}
+
+TEST(moveTest, escapeFromCheck)
+{
+    Board board;
+    board.setFENCode("1Q3B2/8/R2k4/2P1PN2/8/8/8/8 b - - 0 1");
+    auto moves = board.getMoves();
+    EXPECT_EQ(moves, "d6d5|d6d7|");
 }

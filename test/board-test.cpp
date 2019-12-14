@@ -35,10 +35,10 @@ TEST(boardTest, getPiecesAtPositions)
 {
     Board board;
     board.setFENCode("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR");
-    EXPECT_EQ(board.getPiece(a1), 'R');
-    EXPECT_EQ(board.getPiece(e1), 'K');
-    EXPECT_EQ(board.getPiece(e8), 'k');
-    EXPECT_EQ(board.getPiece(e7), 'p');
+    EXPECT_EQ(board.getPieceAt(a1), R);
+    EXPECT_EQ(board.getPieceAt(e1), K);
+    EXPECT_EQ(board.getPieceAt(e8), k);
+    EXPECT_EQ(board.getPieceAt(e7), p);
 }
 
 TEST(boardTest, allWhitePieces)
