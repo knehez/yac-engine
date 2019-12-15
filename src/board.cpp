@@ -304,6 +304,17 @@ void Board::setFENCode(std::string fenCode)
             break;
         }
     }
+
+    // if no more information in FEN then return
+    if (fenParts.size() == 3 || fenParts[3][0] == '-')
+    {
+        return;
+    }
+    int file = fenParts[3][0] - 'a';
+    int rank = fenParts[3][1] - '1';
+
+    int pos = rank * 8 + file;
+    enpassant = (Position)pos;
 }
 
 Piece Board::getPieceAt(Position pos)

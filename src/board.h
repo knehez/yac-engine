@@ -68,7 +68,7 @@ private:
 
     int generate_rank_attack(int o, int f);
     void trimWhiteSpaces(std::string &str);
-    
+
     // DATA
     Mask MASK[h8];
     uint64_t m_boards[NUMBER_OF_PIECES];
@@ -80,6 +80,7 @@ private:
     bool castlingWhite[2] = {true, true};
     bool castlingBlack[2] = {true, true};
 
+    FRIEND_TEST(boardTest, entpassant);
     // enpassant position
     Position enpassant = NUMBER_OF_SQUARES;
 };

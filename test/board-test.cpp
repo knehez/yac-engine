@@ -415,3 +415,12 @@ TEST(boardTest, castlingFEN)
     EXPECT_EQ(board.castlingBlack[0], true);
     EXPECT_EQ(board.castlingBlack[1], true);
 }
+
+TEST(boardTest, entpassant)
+{
+    Board board;
+    board.setFENCode("r1bqkbnr/ppppp1p1/2n2p2/7p/3PPP2/8/PPP3PP/RNBQKBNR w KQkq h6 0 4");
+    auto b = board.getWhitePiecesBoard();
+
+    EXPECT_EQ(board.enpassant, h6);
+}
