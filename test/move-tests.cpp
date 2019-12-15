@@ -42,3 +42,11 @@ TEST(moveTest, escapeFromCheck)
     auto moves = board.getMoves();
     EXPECT_EQ(moves, "d6d5|d6d7|");
 }
+
+TEST(moveTest, escapeFromCheck2)
+{
+    Board board;
+    board.setFENCode("K7/PN6/8/3b4/8/8/8/3k4 w - - 0 1");
+    auto moves = board.getMoves();
+    EXPECT_EQ(moves, "a8b8|");
+}

@@ -1,5 +1,6 @@
 #pragma once
 #include <intrin.h>
+#include <stdint.h>
 
 const uint64_t notAFile = 0X7F7F7F7F7F7F7F7F;
 const uint64_t notHFile = 0XFEFEFEFEFEFEFEFE;
@@ -55,7 +56,8 @@ typedef struct Mask
 enum Color
 {
     WHITE,
-    BLACK
+    BLACK,
+    NUMBER_OF_COLORS
 };
 
 const char piecesChars[] = "PpRrNnBbQqKk";

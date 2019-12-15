@@ -1,10 +1,13 @@
 #pragma once
 #include <string>
+#include <vector>
+#include <iostream>
+#include <sstream>
 #include "constants.h"
 #include "gtest/gtest_prod.h"
 
-
-typedef struct move{
+typedef struct move
+{
     Position start;
     Position end;
     Piece piece;
@@ -30,7 +33,7 @@ public:
 
     uint64_t getBoard(char piece);
 
-    uint64_t allPieceMoves(int pos);
+    uint64_t allPieceMoves(Position pos);
     std::string getMoves();
     void clear();
 
@@ -46,30 +49,37 @@ private:
     uint64_t antidiagonalAttack(uint64_t pieces, Position x);
     FRIEND_TEST(boardTest, diagonalAttack);
     uint64_t diagonalAttack(uint64_t pieces, Position x);
-    
-    uint64_t attack(uint64_t pieces, Position pos, uint64_t mask);
-    uint64_t knightMoves(int pos);
-    uint64_t kingMoves(int pos);
-    uint64_t bishopMoves(int pos);
-    uint64_t pawnMoves(int pos);
-    uint64_t rookMoves(int pos);
-    uint64_t pawnBlackMoves(int pos);
-    uint64_t pawnBlackHitMoves(int pos);
-    uint64_t pawnWhiteHitMoves(int pos);
-    uint64_t pawnWhiteMoves(int pos);
+
+    Position nextSquare(uint64_t *board);
+
+    uint64_t attack(uint64_t board, Position pos, uint64_t movesMask);
+    uint64_t knightMoves(Position pos);
+    uint64_t kingMoves(Position pos);
+    uint64_t bishopMoves(Position pos);
+    uint64_t pawnMoves(Position pos);
+    uint64_t rookMoves(Position pos);
+    uint64_t pawnBlackMoves(Position pos);
+    uint64_t pawnBlackHitMoves(Position pos);
+    uint64_t pawnWhiteHitMoves(Position pos);
+    uint64_t pawnWhiteMoves(Position pos);
 
     FRIEND_TEST(moveTest, whiteCheckers);
     uint64_t getCheckers();
-    
-    void trimWhiteSpaces(std::string &str);
 
     int generate_rank_attack(int o, int f);
-
-    int nextSquare(uint64_t *board);
+    void trimWhiteSpaces(std::string &str);
     
     // DATA
     Mask MASK[h8];
     uint64_t m_boards[NUMBER_OF_PIECES];
     uint8_t RANK_ATTACK[512];
     Color color;
+
+    FRIEND_TEST(boardTest, castlingFEN);
+    // king and queen sides
+    bool castlingWhite[2] = {true, true};
+    bool castlingBlack[2] = {true, true};
+
+    // enpassant position
+    Position enpassant = NUMBER_OF_SQUARES;
 };

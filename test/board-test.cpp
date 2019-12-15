@@ -402,3 +402,16 @@ TEST(boardTest, possibleMovesBishop)
     EXPECT_EQ(board.showOneBitBoard(b, a2, h2), "-------X");
     EXPECT_EQ(board.showOneBitBoard(b, a1, h1), "--------");
 }
+
+TEST(boardTest, castlingFEN)
+{
+    Board board;
+    board.setFENCode("rnbqkbnr/ppp1pppp/8/3p4/3P4/8/PPP1PPPP/RNBQKBNR w KQkq - 0 1");
+    auto b = board.getWhitePiecesBoard();
+
+    EXPECT_EQ(board.castlingWhite[0], true);
+    EXPECT_EQ(board.castlingWhite[1], true);
+    
+    EXPECT_EQ(board.castlingBlack[0], true);
+    EXPECT_EQ(board.castlingBlack[1], true);
+}

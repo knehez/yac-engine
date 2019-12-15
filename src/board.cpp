@@ -85,16 +85,16 @@ Board::Board()
     color = WHITE;
 }
 
-int Board::nextSquare(uint64_t *board)
+Position Board::nextSquare(uint64_t *board)
 {
     if (board == 0)
     {
-        return -1;
+        return NUMBER_OF_SQUARES;
     }
     unsigned long index;
     bitScan64(index, board);
     *board &= *board - 1;
-    return (int)index;
+    return (Position)index;
 }
 
 void Board::clear()
@@ -136,12 +136,12 @@ uint64_t Board::rankAttack(uint64_t occupancy, Position pos)
 }
 
 /* Generate attack using the hyperbola quintessence approach */
-uint64_t Board::attack(uint64_t pieces, Position pos, uint64_t mask)
+uint64_t Board::attack(uint64_t board, Position pos, uint64_t movesMask)
 {
-    uint64_t o = pieces & mask;
+    uint64_t o = board & movesMask;
     uint64_t r = bit_bswap(o);
 
-    return ((o - (1ULL << pos)) ^ bit_bswap(r - (1ULL << (pos ^ 56)))) & mask;
+    return ((o - (1ULL << pos)) ^ bit_bswap(r - (1ULL << (pos ^ 56)))) & movesMask;
 }
 
 uint64_t Board::diagonalAttack(uint64_t pieces, Position x)
@@ -218,7 +218,14 @@ void Board::setFENCode(std::string fenCode)
     int rowNumber = 7;
     int boardPos = 8 * rowNumber;
 
-    for (char &c : fenCode)
+    std::vector<std::string> fenParts;
+    std::stringstream ss(fenCode);
+    for (std::string s; ss >> s;)
+    {
+        fenParts.push_back(s);
+    }
+
+    for (char c : fenParts[0])
     {
         int emptyPositions = atoi(&c);
         if (emptyPositions != 0)
@@ -255,11 +262,47 @@ void Board::setFENCode(std::string fenCode)
         }
         boardPos++;
     }
-    // w or b after the first space
-    auto index = fenCode.find(' ');
-    if (index != std::string::npos)
+
+    // only board information
+    if (fenParts.size() == 1)
     {
-        fenCode[index + 1] == 'w' ? color = WHITE : color = BLACK;
+        return;
+    }
+
+    // w or b after the first space
+    for (char c : fenParts[1])
+    {
+        c == 'w' ? color = WHITE : color = BLACK;
+    }
+
+    // if no more information in FEN then return
+    if (fenParts.size() == 2)
+    {
+        return;
+    }
+
+    castlingWhite[0] = false;
+    castlingWhite[1] = false;
+    castlingBlack[0] = false;
+    castlingBlack[1] = false;
+
+    for (char c : fenParts[2])
+    {
+        switch (c)
+        {
+        case 'K':
+            castlingWhite[0] = true;
+            break;
+        case 'Q':
+            castlingWhite[1] = true;
+            break;
+        case 'k':
+            castlingBlack[0] = true;
+            break;
+        case 'q':
+            castlingBlack[1] = true;
+            break;
+        }
     }
 }
 
@@ -300,7 +343,7 @@ std::string Board::getMoves()
 
     while (board)
     {
-        int piecePos = nextSquare(&board);
+        auto piecePos = nextSquare(&board);
 
         auto tmpBoard = allPieceMoves(piecePos);
 
@@ -346,10 +389,10 @@ uint64_t Board::getCheckers()
     oppositeBishopQueen |= m_boards[B + oppositeColor];
 
     // for debug purposes
-    auto knights = knightMoves(kingPos) & oppositeKnights;
-    auto pawns = (oppositeColor == WHITE ? pawnBlackHitMoves(kingPos) : pawnWhiteHitMoves(kingPos)) & oppositePawns;
-    auto bishops = bishopMoves(kingPos) & oppositeBishopQueen;
-    auto rooks = rookMoves(kingPos) & oppositeRookQueen;
+    // auto knights = knightMoves(kingPos) & oppositeKnights;
+    // auto pawns = (oppositeColor == WHITE ? pawnBlackHitMoves(kingPos) : pawnWhiteHitMoves(kingPos)) & oppositePawns;
+    // auto bishops = bishopMoves(kingPos) & oppositeBishopQueen;
+    // auto rooks = rookMoves(kingPos) & oppositeRookQueen;
 
     return knightMoves(kingPos) & oppositeKnights |
            (oppositeColor == WHITE ? pawnBlackHitMoves(kingPos) : pawnWhiteHitMoves(kingPos)) & oppositePawns |
@@ -357,7 +400,7 @@ uint64_t Board::getCheckers()
            rookMoves(kingPos) & oppositeRookQueen;
 }
 
-// good for piceces where there is ony one
+// good for piceces where there is only one
 Position Board::getPiecePos(Piece piece)
 {
     unsigned long index;
@@ -366,12 +409,12 @@ Position Board::getPiecePos(Piece piece)
     return (Position)index;
 }
 
-uint64_t Board::allPieceMoves(int pos)
+uint64_t Board::allPieceMoves(Position pos)
 {
     Piece piece = getPieceAt((Position)pos);
 
     auto notOwnPieces = (color == WHITE ? ~getWhitePiecesBoard() : ~getBlackPiecesBoard());
-    auto oppositePieces = color == BLACK ? getWhitePiecesBoard() : getBlackPiecesBoard();
+    uint64_t oppositePieces;
 
     switch (piece)
     {
@@ -385,8 +428,10 @@ uint64_t Board::allPieceMoves(int pos)
     case k:
         return kingMoves(pos) & notOwnPieces;
     case P:
+        oppositePieces = color == BLACK ? getWhitePiecesBoard() : getBlackPiecesBoard();
         return pawnWhiteMoves(pos) | (pawnWhiteHitMoves(pos) & oppositePieces);
     case p:
+        oppositePieces = color == BLACK ? getWhitePiecesBoard() : getBlackPiecesBoard();
         return pawnBlackMoves(pos) | (pawnBlackHitMoves(pos) & oppositePieces);
     case R:
     case r:
@@ -399,7 +444,7 @@ uint64_t Board::allPieceMoves(int pos)
     }
 }
 
-uint64_t Board::rookMoves(int pos)
+uint64_t Board::rookMoves(Position pos)
 {
     auto allPiecesAsBitmap = getWhitePiecesBoard() | getBlackPiecesBoard();
     auto removeRookAtPosition = ~(1LLU << (Position)pos);
@@ -409,7 +454,7 @@ uint64_t Board::rookMoves(int pos)
     return rank | file;
 }
 
-uint64_t Board::bishopMoves(int pos)
+uint64_t Board::bishopMoves(Position pos)
 {
     auto allPiecesAsBitmap = getWhitePiecesBoard() | getBlackPiecesBoard();
     auto notBishopAtPosition = ~(1LLU << (Position)pos);
@@ -421,7 +466,7 @@ uint64_t Board::bishopMoves(int pos)
     return diagonal | antiDiagonal;
 }
 
-uint64_t Board::knightMoves(int pos)
+uint64_t Board::knightMoves(Position pos)
 {
     uint64_t tmp = 1LLU << pos;
     uint64_t ret = KNIGHT_NORTH_EAST(tmp) & notHFile;
@@ -435,7 +480,7 @@ uint64_t Board::knightMoves(int pos)
     return ret;
 }
 
-uint64_t Board::pawnBlackMoves(int pos)
+uint64_t Board::pawnBlackMoves(Position pos)
 {
     uint64_t tmp = 1LLU << pos;
     // move south if there is not any pieces in front of the pawn
@@ -445,7 +490,7 @@ uint64_t Board::pawnBlackMoves(int pos)
     return ret;
 }
 
-uint64_t Board::pawnBlackHitMoves(int pos)
+uint64_t Board::pawnBlackHitMoves(Position pos)
 {
     uint64_t tmp = 1LLU << pos;
     // move south if there is not any pieces in front of the pawn
@@ -453,7 +498,7 @@ uint64_t Board::pawnBlackHitMoves(int pos)
     return ret;
 }
 
-uint64_t Board::pawnWhiteHitMoves(int pos)
+uint64_t Board::pawnWhiteHitMoves(Position pos)
 {
     uint64_t tmp = 1LLU << pos;
     // move south if there is not any pieces in front of the pawn
@@ -461,7 +506,7 @@ uint64_t Board::pawnWhiteHitMoves(int pos)
     return ret;
 }
 
-uint64_t Board::pawnWhiteMoves(int pos)
+uint64_t Board::pawnWhiteMoves(Position pos)
 {
     uint64_t tmp = 1LLU << pos;
     // move north if there is not any pieces in front of the pawn
@@ -471,7 +516,7 @@ uint64_t Board::pawnWhiteMoves(int pos)
     return ret;
 }
 
-uint64_t Board::kingMoves(int pos)
+uint64_t Board::kingMoves(Position pos)
 {
     uint64_t tmp = 1LLU << pos;
     uint64_t ret = NORTH(tmp);
