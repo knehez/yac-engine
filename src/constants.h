@@ -1,5 +1,5 @@
 #pragma once
-#include <intrin.h>
+
 #include <stdint.h>
 
 const uint64_t notAFile = 0X7F7F7F7F7F7F7F7F;
@@ -39,9 +39,9 @@ const uint64_t FILES[8] = {AFILE, BFILE, CFILE, DFILE, EFILE, FFILE, GFILE, HFIL
 #define KNIGHT_SOUTH_EAST(b) b >> 15
 #define KNIGHT_SOUTH_WEST(b) b >> 17
 
-#define bitScan64(index, board) _BitScanForward64(&index, *board)
-#define countBits(b) __popcnt64(b)
-#define bit_bswap(b) _byteswap_uint64(b)
+int countBits(uint64_t b);
+uint64_t bit_bswap(uint64_t board);
+
 #define algebraicFile(pos) 'a' + (pos & 7)
 #define algebraicRank(pos) '1' + (pos >> 3)
 #define oppositeColor(c) c == WHITE ? BLACK : WHITE
@@ -155,3 +155,5 @@ enum Position
     h8,
     NUMBER_OF_SQUARES
 };
+
+Position bitScan64(uint64_t board);

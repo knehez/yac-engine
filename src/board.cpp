@@ -91,8 +91,7 @@ Position Board::nextSquare(uint64_t *board)
     {
         return NUMBER_OF_SQUARES;
     }
-    unsigned long index;
-    bitScan64(index, board);
+    auto index = bitScan64(*board);
     *board &= *board - 1;
     return (Position)index;
 }
@@ -405,9 +404,10 @@ uint64_t Board::getCheckers()
 // good for piceces where there is only one
 Position Board::getPiecePos(Piece piece)
 {
-    unsigned long index;
-    auto board = &m_boards[piece];
-    bitScan64(index, board);
+    // select board
+    auto board = m_boards[piece];
+    // determinate the first bit
+    auto index = bitScan64(board);
     return (Position)index;
 }
 

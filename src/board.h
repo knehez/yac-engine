@@ -1,4 +1,8 @@
 #pragma once
+
+#ifndef BOARD_H__
+#define BOARD_H__
+
 #include <string>
 #include <vector>
 #include <iostream>
@@ -83,3 +87,5 @@ private:
     // enpassant position
     Position enpassant = NUMBER_OF_SQUARES;
 };
+
+#endif

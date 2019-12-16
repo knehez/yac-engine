@@ -5,6 +5,7 @@ Simple 64-bit bitboard based chess engine written in C++. Developed in TDD style
 ### GTest installation
 **Manual installation steps:**
 
+    mkdir lib
     cd lib
     git clone https://github.com/google/googletest.git
     cd googletest
