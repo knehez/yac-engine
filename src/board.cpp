@@ -357,7 +357,7 @@ std::string Board::getMoves()
         if (tmpBoard != 0)
         {
             int tmpPos;
-            while (tmpPos = nextSquare(&tmpBoard))
+            while ((tmpPos = nextSquare(&tmpBoard)) < NUMBER_OF_SQUARES)
             {
                 Move tmpMove;
                 tmpMove.start = (Position)piecePos;
@@ -389,16 +389,15 @@ uint64_t Board::getCheckers()
 
     auto oppositeKnights = m_boards[N + oppositeColor];
     auto oppositePawns = m_boards[P + oppositeColor];
-    auto oppositeBishops = m_boards[B + oppositeColor];
     auto oppositeRookQueen = m_boards[Q + oppositeColor];
     auto oppositeBishopQueen = oppositeRookQueen;
     oppositeRookQueen |= m_boards[R + oppositeColor];
     oppositeBishopQueen |= m_boards[B + oppositeColor];
 
-    return knightMoves(kingPos) & oppositeKnights |
-           (oppositeColor == WHITE ? pawnBlackHitMoves(kingPos) : pawnWhiteHitMoves(kingPos)) & oppositePawns |
-           bishopMoves(kingPos) & oppositeBishopQueen |
-           rookMoves(kingPos) & oppositeRookQueen;
+    return (knightMoves(kingPos) & oppositeKnights) |
+           ((oppositeColor == WHITE ? pawnBlackHitMoves(kingPos) : pawnWhiteHitMoves(kingPos)) & oppositePawns) |
+           (bishopMoves(kingPos) & oppositeBishopQueen) |
+           (rookMoves(kingPos) & oppositeRookQueen);
 }
 
 // good for piceces where there is only one

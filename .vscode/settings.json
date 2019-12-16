@@ -59,6 +59,15 @@
         "xtr1common": "cpp",
         "xutility": "cpp",
         "bitset": "cpp",
-        "random": "cpp"
+        "random": "cpp",
+        "*.tcc": "cpp",
+        "clocale": "cpp",
+        "cstdarg": "cpp",
+        "cwctype": "cpp",
+        "numeric": "cpp",
+        "locale": "cpp",
+        "queue": "cpp",
+        "xlocbuf": "cpp",
+        "xlocmes": "cpp"
     }
 }
