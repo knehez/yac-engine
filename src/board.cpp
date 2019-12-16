@@ -12,7 +12,7 @@ Board::Board()
         }
     }
 
-    for (int x = a1; x < h8; x++)
+    for (int x = a1; x < NUMBER_OF_SQUARES; x++)
     {
         // http://cinnamonchess.altervista.org/bitboard_calculator/Calc.html
         int file = x & 7;
@@ -87,7 +87,7 @@ Board::Board()
 
 Position Board::nextSquare(uint64_t *board)
 {
-    if (board == 0)
+    if (*board == 0)
     {
         return NUMBER_OF_SQUARES;
     }
@@ -214,6 +214,7 @@ std::string Board::getFENCode()
 
 void Board::setFENCode(std::string fenCode)
 {
+    clear();
     int rowNumber = 7;
     int boardPos = 8 * rowNumber;
 

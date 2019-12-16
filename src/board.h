@@ -74,7 +74,7 @@ private:
     void trimWhiteSpaces(std::string &str);
 
     // DATA
-    Mask MASK[h8];
+    Mask MASK[NUMBER_OF_SQUARES];
     uint64_t m_boards[NUMBER_OF_PIECES];
     uint8_t RANK_ATTACK[512];
     Color color;
