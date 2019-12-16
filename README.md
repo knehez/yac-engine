@@ -12,7 +12,10 @@ Simple 64-bit bitboard based chess engine written in C++. Developed in TDD style
 
 **Usage**
 
-    cmake --build ./build --config Debug --target yace_test -- -j 10
+    mkdir build
+    cd build
+    cmake ..
+    cmake --build .
     cd build/test
     yace-test
 

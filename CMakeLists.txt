@@ -1,8 +1,15 @@
-cmake_minimum_required(VERSION 3.10)
-project(yace)
+cmake_minimum_required(VERSION 3.5)
+project(yace VERSION 1.0
+             DESCRIPTION "Yet Another Chess Engine"
+             LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_COMPILE_FEATURES EHsc)
+
+if(NOT CMAKE_SIZEOF_VOID_P EQUAL 8)
+    message("Please switch to x64 build.")
+    return()
+endif()
 
 include_directories(src)
 
