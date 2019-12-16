@@ -7,11 +7,12 @@ Simple 64-bit bitboard based chess engine. Developed in TDD style.
 
     cd lib
     git clone https://github.com/google/googletest.git
+    cd googletest
     git checkout tags/release-1.10.0
 
 **Usage**
 
-    cmake .
+    cmake --build ./build --config Debug --target yace_test -- -j 10
     cd build/test
     yace-test
 

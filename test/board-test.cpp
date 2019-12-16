@@ -409,11 +409,10 @@ TEST(boardTest, castlingFEN)
     board.setFENCode("rnbqkbnr/ppp1pppp/8/3p4/3P4/8/PPP1PPPP/RNBQKBNR w KQkq - 0 1");
     auto b = board.getWhitePiecesBoard();
 
-    EXPECT_EQ(board.castlingWhite[0], true);
-    EXPECT_EQ(board.castlingWhite[1], true);
-    
-    EXPECT_EQ(board.castlingBlack[0], true);
-    EXPECT_EQ(board.castlingBlack[1], true);
+    EXPECT_EQ(board.castling & CASTLING_BLACK_KINGSIDE, CASTLING_BLACK_KINGSIDE);
+    EXPECT_EQ(board.castling & CASTLING_BLACK_QUEENSIDE, CASTLING_BLACK_QUEENSIDE);
+    EXPECT_EQ(board.castling & CASTLING_WHITE_KINGSIDE, CASTLING_WHITE_KINGSIDE);
+    EXPECT_EQ(board.castling & CASTLING_WHITE_QUEENSIDE, CASTLING_WHITE_QUEENSIDE);   
 }
 
 TEST(boardTest, entpassant)
