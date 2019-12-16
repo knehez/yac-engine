@@ -31,6 +31,6 @@ uint64_t bit_bswap(uint64_t board)
 #if _WIN64
     return _byteswap_uint64(board);
 #elif __linux__
-    return __builtin_bswap64(board)
+    return __builtin_bswap64(board);
 #endif
 }
