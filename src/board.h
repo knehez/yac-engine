@@ -76,9 +76,8 @@ private:
     Color color;
 
     FRIEND_TEST(boardTest, castlingFEN);
-    // king and queen sides
-    bool castlingWhite[2] = {true, true};
-    bool castlingBlack[2] = {true, true};
+    // king and queen sides are enabled by default
+    unsigned short castling = CASTLING_BLACK_KINGSIDE | CASTLING_BLACK_QUEENSIDE | CASTLING_WHITE_KINGSIDE | CASTLING_WHITE_QUEENSIDE;
 
     FRIEND_TEST(boardTest, entpassant);
     // enpassant position

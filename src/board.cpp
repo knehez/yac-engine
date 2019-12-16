@@ -281,26 +281,23 @@ void Board::setFENCode(std::string fenCode)
         return;
     }
 
-    castlingWhite[0] = false;
-    castlingWhite[1] = false;
-    castlingBlack[0] = false;
-    castlingBlack[1] = false;
+    castling = 0;
 
     for (char c : fenParts[2])
     {
         switch (c)
         {
         case 'K':
-            castlingWhite[0] = true;
+            castling |= CASTLING_WHITE_KINGSIDE;
             break;
         case 'Q':
-            castlingWhite[1] = true;
+            castling |= CASTLING_WHITE_QUEENSIDE;
             break;
         case 'k':
-            castlingBlack[0] = true;
+            castling |= CASTLING_BLACK_KINGSIDE;
             break;
         case 'q':
-            castlingBlack[1] = true;
+            castling |= CASTLING_BLACK_QUEENSIDE;
             break;
         }
     }
@@ -398,12 +395,6 @@ uint64_t Board::getCheckers()
     auto oppositeBishopQueen = oppositeRookQueen;
     oppositeRookQueen |= m_boards[R + oppositeColor];
     oppositeBishopQueen |= m_boards[B + oppositeColor];
-
-    // for debug purposes
-    // auto knights = knightMoves(kingPos) & oppositeKnights;
-    // auto pawns = (oppositeColor == WHITE ? pawnBlackHitMoves(kingPos) : pawnWhiteHitMoves(kingPos)) & oppositePawns;
-    // auto bishops = bishopMoves(kingPos) & oppositeBishopQueen;
-    // auto rooks = rookMoves(kingPos) & oppositeRookQueen;
 
     return knightMoves(kingPos) & oppositeKnights |
            (oppositeColor == WHITE ? pawnBlackHitMoves(kingPos) : pawnWhiteHitMoves(kingPos)) & oppositePawns |

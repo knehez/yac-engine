@@ -46,6 +46,14 @@ const uint64_t FILES[8] = {AFILE, BFILE, CFILE, DFILE, EFILE, FFILE, GFILE, HFIL
 #define algebraicRank(pos) '1' + (pos >> 3)
 #define oppositeColor(c) c == WHITE ? BLACK : WHITE
 
+enum Castling
+{
+    CASTLING_WHITE_KINGSIDE = 1,
+    CASTLING_WHITE_QUEENSIDE = 2,
+    CASTLING_BLACK_KINGSIDE = 4,
+    CASTLING_BLACK_QUEENSIDE = 8,
+};
+
 typedef struct Mask
 {
     uint64_t diagonal;
