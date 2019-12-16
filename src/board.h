@@ -68,7 +68,7 @@ private:
     uint64_t pawnWhiteMoves(Position pos);
 
     FRIEND_TEST(moveTest, whiteCheckers);
-    uint64_t getCheckers();
+    bool isSqareAttacked(Position square, uint64_t *board, Color oppositecolor);
 
     int generate_rank_attack(int o, int f);
     void trimWhiteSpaces(std::string &str);

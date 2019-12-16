@@ -365,9 +365,10 @@ std::string Board::getMoves()
                 tmpMove.end = (Position)tmpPos;
                 tmpMove.piece = getPieceAt((Position)piecePos);
                 move(tmpMove);
-                auto checkers = getCheckers();
+                auto kingPos = color == WHITE ? getPiecePos(K) : getPiecePos(k);
+                auto isInCheck = isSqareAttacked(kingPos, &m_boards[0], oppositeColor(color));
                 undoMove(tmpMove);
-                if (checkers == 0)
+                if (!isInCheck)
                 {
                     // valid move
                     moves += algebraicFile(piecePos);
@@ -379,26 +380,79 @@ std::string Board::getMoves()
             }
         }
     }
+    // casting is possible?
+    color == WHITE ? board = getWhitePiecesBoard() : board = getBlackPiecesBoard();
+
+    if (color == WHITE && !isSqareAttacked(getPiecePos(K), &m_boards[0], oppositeColor(color)))
+    {
+        if (castling & CASTLING_WHITE_KINGSIDE)
+        {
+            // king on e1, rook on h1 and f1 and g1 empty
+            // king on f1, g1 not in check
+            if (getPiecePos(K) == e1 && getPieceAt(h1) == R &&
+                getPieceAt(f1) == NUMBER_OF_PIECES && getPieceAt(g1) == NUMBER_OF_PIECES &&
+                !isSqareAttacked(f1, &m_boards[0], oppositeColor(color)) &&
+                !isSqareAttacked(g1, &m_boards[0], oppositeColor(color)))
+            {
+                moves += "e1g1|";
+            }
+        }
+        if (castling & CASTLING_WHITE_QUEENSIDE)
+        {
+            // king on e1, rook on a1, b1 c1 d1 empty
+            // king on e1, d1, c1 not in check
+            if (getPiecePos(K) == e1 && getPieceAt(a1) == R &&
+                getPieceAt(b1) == NUMBER_OF_PIECES && getPieceAt(c1) == NUMBER_OF_PIECES && getPieceAt(d1) == NUMBER_OF_PIECES &&
+                !isSqareAttacked(d1, &m_boards[0], oppositeColor(color)) &&
+                !isSqareAttacked(c1, &m_boards[0], oppositeColor(color)))
+            {
+                moves += "e1c1|";
+            }
+        }
+    }
+    if (color == BLACK && !isSqareAttacked(getPiecePos(k), &m_boards[0], oppositeColor(color)))
+    {
+        if (castling & CASTLING_BLACK_KINGSIDE)
+        {
+            // king on e8, rook on h8 and f8 and g8 are empty
+            // king on f8, g8 not in check
+            if (getPiecePos(k) == e8 && getPieceAt(h8) == r &&
+                getPieceAt(f8) == NUMBER_OF_PIECES && getPieceAt(g8) == NUMBER_OF_PIECES &&
+                !isSqareAttacked(f8, &m_boards[0], oppositeColor(color)) &&
+                !isSqareAttacked(g8, &m_boards[0], oppositeColor(color)))
+            {
+                moves += "e8g8|";
+            }
+        }
+        if (castling & CASTLING_BLACK_QUEENSIDE)
+        {
+            // king on e8, rook on a8, b8 c8 d8 are empty
+            // king on e1, d1, c1 not in check
+            if (getPiecePos(k) == e8 && getPieceAt(a8) == r &&
+                getPieceAt(b8) == NUMBER_OF_PIECES && getPieceAt(c8) == NUMBER_OF_PIECES && getPieceAt(d8) == NUMBER_OF_PIECES &&
+                !isSqareAttacked(d8, &m_boards[0], oppositeColor(color)) &&
+                !isSqareAttacked(c8, &m_boards[0], oppositeColor(color)))
+            {
+                moves += "e8c8|";
+            }
+        }
+    }
     return moves;
 }
 
-uint64_t Board::getCheckers()
+bool Board::isSqareAttacked(Position square, uint64_t *board, Color oppositeColor)
 {
-    auto kingPos = (color == WHITE) ? getPiecePos(K) : getPiecePos(k);
-
-    auto oppositeColor = oppositeColor(color);
-
-    auto oppositeKnights = m_boards[N + oppositeColor];
-    auto oppositePawns = m_boards[P + oppositeColor];
-    auto oppositeRookQueen = m_boards[Q + oppositeColor];
+    auto oppositeKnights = board[N + oppositeColor];
+    auto oppositePawns = board[P + oppositeColor];
+    auto oppositeRookQueen = board[Q + oppositeColor];
     auto oppositeBishopQueen = oppositeRookQueen;
-    oppositeRookQueen |= m_boards[R + oppositeColor];
-    oppositeBishopQueen |= m_boards[B + oppositeColor];
+    oppositeRookQueen |= board[R + oppositeColor];
+    oppositeBishopQueen |= board[B + oppositeColor];
 
-    return (knightMoves(kingPos) & oppositeKnights) |
-           ((oppositeColor == WHITE ? pawnBlackHitMoves(kingPos) : pawnWhiteHitMoves(kingPos)) & oppositePawns) |
-           (bishopMoves(kingPos) & oppositeBishopQueen) |
-           (rookMoves(kingPos) & oppositeRookQueen);
+    return (knightMoves(square) & oppositeKnights) |
+           ((oppositeColor == WHITE ? pawnBlackHitMoves(square) : pawnWhiteHitMoves(square)) & oppositePawns) |
+           (bishopMoves(square) & oppositeBishopQueen) |
+           (rookMoves(square) & oppositeRookQueen);
 }
 
 // good for piceces where there is only one
