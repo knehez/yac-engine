@@ -22,7 +22,7 @@ Position bitScan64(uint64_t board)
     _BitScanForward64(&index, board);
     return (Position)index;
 #elif __linux__
-    return __builtin_ctzll(board);
+    return (Position)__builtin_ctzll(board);
 #endif
 }
 
