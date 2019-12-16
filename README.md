@@ -1,6 +1,6 @@
-# Yet Another Chess Engine
+# Yet Another Chess Engine (YAC-Engine)
 
-Simple 64-bit bitboard based chess engine. Developed in TDD style.
+Simple 64-bit bitboard based chess engine written in C++. Developed in TDD style.
 
 ### GTest installation
 **Manual installation steps:**
