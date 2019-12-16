@@ -407,7 +407,6 @@ TEST(boardTest, castlingFEN)
 {
     Board board;
     board.setFENCode("rnbqkbnr/ppp1pppp/8/3p4/3P4/8/PPP1PPPP/RNBQKBNR w KQkq - 0 1");
-    auto b = board.getWhitePiecesBoard();
 
     EXPECT_EQ(board.castling & CASTLING_BLACK_KINGSIDE, CASTLING_BLACK_KINGSIDE);
     EXPECT_EQ(board.castling & CASTLING_BLACK_QUEENSIDE, CASTLING_BLACK_QUEENSIDE);
@@ -419,7 +418,6 @@ TEST(boardTest, entpassant)
 {
     Board board;
     board.setFENCode("r1bqkbnr/ppppp1p1/2n2p2/7p/3PPP2/8/PPP3PP/RNBQKBNR w KQkq h6 0 4");
-    auto b = board.getWhitePiecesBoard();
 
     EXPECT_EQ(board.enpassant, h6);
 }

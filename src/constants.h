@@ -7,16 +7,16 @@ const uint64_t notHFile = 0XFEFEFEFEFEFEFEFE;
 const uint64_t notABFile = 0X3f3f3f3f3f3f3f3f;
 const uint64_t notGHFile = 0XFCFCFCFCFCFCFCFC;
 
-const uint64_t AFILE = 0x1010101010101010;
-const uint64_t BFILE = 0x2020202020202020;
-const uint64_t CFILE = 0x4040404040404040;
-const uint64_t DFILE = 0x808080808080808;
-const uint64_t EFILE = 0x1010101010101010;
-const uint64_t FFILE = 0x2020202020202020;
-const uint64_t GFILE = 0x4040404040404040;
-const uint64_t HFILE = 0x8080808080808080;
+const uint64_t A_FILE = 0x1010101010101010;
+const uint64_t B_FILE = 0x2020202020202020;
+const uint64_t C_FILE = 0x4040404040404040;
+const uint64_t D_FILE = 0x808080808080808;
+const uint64_t E_FILE = 0x1010101010101010;
+const uint64_t F_FILE = 0x2020202020202020;
+const uint64_t G_FILE = 0x4040404040404040;
+const uint64_t H_FILE = 0x8080808080808080;
 
-const uint64_t FILES[8] = {AFILE, BFILE, CFILE, DFILE, EFILE, FFILE, GFILE, HFILE};
+const uint64_t FILES[8] = {A_FILE, B_FILE, C_FILE, D_FILE, E_FILE, F_FILE, G_FILE, H_FILE};
 
 #define NORTH(b) b << 8
 #define NORTH_WEST(b) b << 7
@@ -45,6 +45,8 @@ uint64_t bit_bswap(uint64_t board);
 #define algebraicFile(pos) 'a' + (pos & 7)
 #define algebraicRank(pos) '1' + (pos >> 3)
 #define oppositeColor(c) c == WHITE ? BLACK : WHITE
+
+double chrono(void);
 
 enum Castling
 {
