@@ -12,7 +12,10 @@ typedef struct move
     Position start;
     Position end;
     Piece piece;
+    Piece captured = NUMBER_OF_PIECES;
     Piece promotion = NUMBER_OF_PIECES;
+    unsigned short castling = 0;
+    Position enpassant = NUMBER_OF_SQUARES;
 } Move;
 
 class Board

@@ -330,6 +330,7 @@ void Board::move(Move move)
 
     board &= ~(1LLU << move.start);
     board |= 1LLU << move.end;
+    color = oppositeColor(color);
 }
 
 void Board::undoMove(Move move)
@@ -338,6 +339,7 @@ void Board::undoMove(Move move)
 
     board &= ~(1LLU << move.end);
     board |= (1LLU << move.start);
+    color = oppositeColor(color);
 }
 
 std::string Board::getMoves()
@@ -349,37 +351,44 @@ std::string Board::getMoves()
 
     while (board)
     {
-        auto piecePos = nextSquare(&board);
+        auto actualPiecePos = nextSquare(&board);
 
-        auto tmpBoard = allPieceMoves(piecePos);
+        auto tmpBoard = allPieceMoves(actualPiecePos);
 
         if (tmpBoard != 0)
         {
-            int tmpPos;
-            while ((tmpPos = nextSquare(&tmpBoard)) < NUMBER_OF_SQUARES)
+            int endPos;
+            while ((endPos = nextSquare(&tmpBoard)) < NUMBER_OF_SQUARES)
             {
-                Move tmpMove;
-                tmpMove.start = (Position)piecePos;
-                tmpMove.end = (Position)tmpPos;
-                tmpMove.piece = getPieceAt((Position)piecePos);
-                move(tmpMove);
-                auto kingPos = color == WHITE ? getPiecePos(K) : getPiecePos(k);
-                auto isInCheck = isSqareAttacked(kingPos, &m_boards[0], oppositeColor(color));
-                undoMove(tmpMove);
-                if (!isInCheck)
+                Move tryMove;
+                tryMove.start = (Position)actualPiecePos;
+                tryMove.end = (Position)endPos;
+                tryMove.piece = getPieceAt((Position)actualPiecePos);
+                tryMove.captured = getPieceAt((Position)endPos);
+                
+                move(tryMove);
+                auto oppositeKingPos = color == BLACK ? getPiecePos(K) : getPiecePos(k);
+                
+                // is in check?
+                if (!isSqareAttacked(oppositeKingPos, &m_boards[0], color)) 
                 {
                     // valid move
-                    moves += algebraicFile(piecePos);
-                    moves += algebraicRank(piecePos);
-                    moves += algebraicFile(tmpPos);
-                    moves += algebraicRank(tmpPos);
+                    moves += algebraicFile(actualPiecePos);
+                    moves += algebraicRank(actualPiecePos);
+                    moves += algebraicFile(endPos);
+                    moves += algebraicRank(endPos);
                     moves += '|';
                 }
+                undoMove(tryMove);
             }
         }
     }
     // casting is possible?
     color == WHITE ? board = getWhitePiecesBoard() : board = getBlackPiecesBoard();
+    if(castling == 0)
+    {
+        return moves;
+    }
 
     if (color == WHITE && !isSqareAttacked(getPiecePos(K), &m_boards[0], oppositeColor(color)))
     {
