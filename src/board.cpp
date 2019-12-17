@@ -4,25 +4,20 @@ Board::Board()
 {
     clear();
 
-    for (int x = a1; x <= h8; x++)
+    for (int x = a1; x < NUMBER_OF_SQUARES; x++)
     {
         for (int f = 0; f < 8; f++)
         {
             RANK_ATTACK[x * 8 + f] = generate_rank_attack(x * 2, f);
         }
-    }
-
-    for (int x = a1; x < NUMBER_OF_SQUARES; x++)
-    {
         // http://cinnamonchess.altervista.org/bitboard_calculator/Calc.html
         int file = x & 7;
         int rank = x >> 3;
-
         MASK[x].file = FILES[file];
 
         MASK[x].diagonal = 0;
         // file diagonal bits UP
-        for (int i = x; i <= h8; i += 9)
+        for (int i = x; i < NUMBER_OF_SQUARES; i += 9)
         {
             MASK[x].diagonal |= 1ULL << i;
             file++;
@@ -82,6 +77,7 @@ Board::Board()
             }
         }
     }
+
     color = WHITE;
 }
 
@@ -218,14 +214,17 @@ void Board::setFENCode(std::string fenCode)
     int rowNumber = 7;
     int boardPos = 8 * rowNumber;
 
+    std::string buf;
+    std::stringstream splitter(fenCode);
+
     std::vector<std::string> fenParts;
-    std::stringstream ss(fenCode);
-    for (std::string s; ss >> s;)
+    // splitting string to substrings, delimiter: space
+    while (splitter >> buf)
     {
-        fenParts.push_back(s);
+        fenParts.push_back(buf);
     }
 
-    for (char c : fenParts[0])
+    for (const char c : fenParts[0])
     {
         int emptyPositions = atoi(&c);
         if (emptyPositions != 0)
@@ -309,7 +308,6 @@ void Board::setFENCode(std::string fenCode)
     }
     int file = fenParts[3][0] - 'a';
     int rank = fenParts[3][1] - '1';
-
     int pos = rank * 8 + file;
     enpassant = (Position)pos;
 }
@@ -395,6 +393,7 @@ std::string Board::getMoves()
                 !isSqareAttacked(g1, &m_boards[0], oppositeColor(color)))
             {
                 moves += "e1g1|";
+                castling &= ~(CASTLING_WHITE_KINGSIDE | CASTLING_WHITE_QUEENSIDE);
             }
         }
         if (castling & CASTLING_WHITE_QUEENSIDE)
@@ -407,6 +406,7 @@ std::string Board::getMoves()
                 !isSqareAttacked(c1, &m_boards[0], oppositeColor(color)))
             {
                 moves += "e1c1|";
+                castling &= ~(CASTLING_WHITE_KINGSIDE | CASTLING_WHITE_QUEENSIDE);
             }
         }
     }
@@ -422,6 +422,7 @@ std::string Board::getMoves()
                 !isSqareAttacked(g8, &m_boards[0], oppositeColor(color)))
             {
                 moves += "e8g8|";
+                castling &= ~(CASTLING_BLACK_KINGSIDE | CASTLING_BLACK_QUEENSIDE);
             }
         }
         if (castling & CASTLING_BLACK_QUEENSIDE)
@@ -434,6 +435,7 @@ std::string Board::getMoves()
                 !isSqareAttacked(c8, &m_boards[0], oppositeColor(color)))
             {
                 moves += "e8c8|";
+                castling &= ~(CASTLING_BLACK_KINGSIDE | CASTLING_BLACK_QUEENSIDE);
             }
         }
     }

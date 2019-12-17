@@ -1,8 +1,5 @@
 #pragma once
 
-#ifndef BOARD_H__
-#define BOARD_H__
-
 #include <string>
 #include <vector>
 #include <iostream>
@@ -80,6 +77,7 @@ private:
     Color color;
 
     FRIEND_TEST(boardTest, castlingFEN);
+    FRIEND_TEST(moveTest, castling);
     // king and queen sides are enabled by default
     unsigned short castling = CASTLING_BLACK_KINGSIDE | CASTLING_BLACK_QUEENSIDE | CASTLING_WHITE_KINGSIDE | CASTLING_WHITE_QUEENSIDE;
 
@@ -87,5 +85,3 @@ private:
     // enpassant position
     Position enpassant = NUMBER_OF_SQUARES;
 };
-
-#endif
