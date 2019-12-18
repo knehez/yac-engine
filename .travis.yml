@@ -21,3 +21,14 @@ script:
   - export CXX=/usr/bin/g++-6
   # Check versions of gcc, g++ and cmake
   - gcc -v && g++ -v && cmake --version
+  - cd knehez/yacc-engine
+  - mkdir lib
+  - cd lib
+  - git clone https://github.com/google/googletest.git
+  - cd googletest
+  - git checkout tags/release-1.10.0
+  - cd ../../
+  - mkdir build
+  - cd build
+  - cmake ..
+  - make install

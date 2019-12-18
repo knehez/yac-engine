@@ -3,7 +3,7 @@ project(yace VERSION 1.0
              DESCRIPTION "Yet Another Chess Engine"
              LANGUAGES CXX)
 
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_COMPILE_FEATURES EHsc)
 
 if(NOT CMAKE_SIZEOF_VOID_P EQUAL 8)
