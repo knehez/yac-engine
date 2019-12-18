@@ -2,14 +2,6 @@ dist: bionic
 sudo: required
 language:
   "c++"
-compiler:
-  - gcc
-addons:
-  apt:
-    sources:
-      - ubuntu-toolchain-r-test
-    packages:
-      - cmake
 script:
   - mkdir lib
   - cd lib
