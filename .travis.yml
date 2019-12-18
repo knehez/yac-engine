@@ -31,4 +31,5 @@ script:
   - mkdir build
   - cd build
   - cmake ..
-  - make install
+  - make
+  - ./test/yace_test
