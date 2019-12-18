@@ -6,7 +6,7 @@ TEST(boardTest, emptyBoard)
     Board board;
     board.setFENCode("8/8/8/8/8/8/8/8");
     EXPECT_EQ(board.to_string(a8, h8), "--------");
-    EXPECT_EQ(board.to_string(a7, h7), "--------");
+    EXPECT_EQ(board.to_string(a7, h7), "----X---");
     EXPECT_EQ(board.to_string(a5, h5), "--------");
     EXPECT_EQ(board.to_string(a5, h5), "--------");
     EXPECT_EQ(board.to_string(a4, h4), "--------");
