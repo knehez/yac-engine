@@ -208,25 +208,15 @@ std::string Board::getFENCode()
     return fen;
 }
 
-void Board::setFENCode(std::string fenCode)
+void Board::setFENCode(char *fenCode)
 {
     clear();
     int rowNumber = 7;
     int boardPos = 8 * rowNumber;
 
-    std::string buf;
-    std::stringstream splitter(fenCode);
-
-    std::vector<std::string> fenParts;
-    // splitting string to substrings, delimiter: space
-    while (splitter >> buf)
+    do
     {
-        fenParts.push_back(buf);
-    }
-
-    for (const char c : fenParts[0])
-    {
-        int emptyPositions = atoi(&c);
+        int emptyPositions = atoi(fenCode);
         if (emptyPositions != 0)
         {
             for (int i = 0; i < emptyPositions; i++)
@@ -242,49 +232,38 @@ void Board::setFENCode(std::string fenCode)
         }
         for (int i = 0; i < NUMBER_OF_PIECES; i++)
         {
-            if (c == piecesChars[i])
+            if (*fenCode == piecesChars[i])
             {
                 m_boards[i] |= (1LLU << boardPos);
                 break;
             }
         }
-        if (c == '/')
+        if (*fenCode == '/')
         {
             rowNumber--;
             boardPos = 8 * rowNumber;
             continue;
         }
 
-        if (c == ' ')
+        if (*fenCode == ' ')
         {
+            fenCode++;
             break;
         }
         boardPos++;
-    }
-
-    // only board information
-    if (fenParts.size() == 1)
-    {
-        return;
-    }
+    } while (*(++fenCode));
 
     // w or b after the first space
-    for (char c : fenParts[1])
-    {
-        c == 'w' ? color = WHITE : color = BLACK;
-    }
-
-    // if no more information in FEN then return
-    if (fenParts.size() == 2)
-    {
-        return;
-    }
-
+    *(fenCode++) == 'w' ? color = WHITE : color = BLACK;
+    
+    // step out next space
+    fenCode++;
+    
     castling = 0;
 
-    for (char c : fenParts[2])
+    do
     {
-        switch (c)
+        switch (*fenCode)
         {
         case 'K':
             castling |= CASTLING_WHITE_KINGSIDE;
@@ -298,18 +277,29 @@ void Board::setFENCode(std::string fenCode)
         case 'q':
             castling |= CASTLING_BLACK_QUEENSIDE;
             break;
+        case '-':
+            break;
         }
-    }
+        // exit when space or '-'
+        if (*fenCode == ' ')
+        {
+            fenCode++;
+            break;
+        }
+    } while (*(fenCode++));
 
-    // if no more information in FEN then return
-    if (fenParts.size() == 3 || fenParts[3][0] == '-')
+    // processing enpassant move
+    if (*fenCode == '-')
     {
-        return;
+        fenCode++;
     }
-    int file = fenParts[3][0] - 'a';
-    int rank = fenParts[3][1] - '1';
-    int pos = rank * 8 + file;
-    enpassant = (Position)pos;
+    else
+    {
+        int file = *(fenCode++) - 'a';
+        int rank = *(fenCode++) - '1';
+        int pos = rank * 8 + file;
+        enpassant = (Position)pos;
+    }
 }
 
 Piece Board::getPieceAt(Position pos)
@@ -365,12 +355,12 @@ std::string Board::getMoves()
                 tryMove.end = (Position)endPos;
                 tryMove.piece = getPieceAt((Position)actualPiecePos);
                 tryMove.captured = getPieceAt((Position)endPos);
-                
+
                 move(tryMove);
                 auto oppositeKingPos = color == BLACK ? getPiecePos(K) : getPiecePos(k);
-                
+
                 // is in check?
-                if (!isSqareAttacked(oppositeKingPos, &m_boards[0], color)) 
+                if (!isSqareAttacked(oppositeKingPos, &m_boards[0], color))
                 {
                     // valid move
                     moves += algebraicFile(actualPiecePos);
@@ -385,7 +375,7 @@ std::string Board::getMoves()
     }
     // casting is possible?
     color == WHITE ? board = getWhitePiecesBoard() : board = getBlackPiecesBoard();
-    if(castling == 0)
+    if (castling == 0)
     {
         return moves;
     }

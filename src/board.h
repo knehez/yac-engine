@@ -1,9 +1,6 @@
 #pragma once
 
 #include <string>
-#include <vector>
-#include <iostream>
-#include <sstream>
 #include "constants.h"
 #include "gtest/gtest_prod.h"
 
@@ -23,7 +20,7 @@ class Board
 public:
     Board();
 
-    void setFENCode(std::string fenstr);
+    void setFENCode(char* fenstr);
     std::string getFENCode();
 
     void move(Move);

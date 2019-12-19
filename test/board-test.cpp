@@ -14,6 +14,7 @@ TEST(boardTest, emptyBoard)
     EXPECT_EQ(board.to_string(a2, h2), "--------");
     EXPECT_EQ(board.to_string(a1, h1), "--------");
     EXPECT_EQ(board.getFENCode(), "8/8/8/8/8/8/8/8");
+    EXPECT_GT(chrono(), 0.0);    
 }
 
 TEST(boardTest, fenBoardStartingPosition)
