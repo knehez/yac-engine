@@ -9,6 +9,9 @@ set(CMAKE_CXX_COMPILE_FEATURES EHsc)
 option(COVERALLS "Turn on coveralls support" OFF)
 option(COVERALLS_UPLOAD "Upload the generated coveralls json" ON)
 
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} 
+	${PROJECT_SOURCE_DIR}/coveralls-cmake/cmake)
+
 if (COVERALLS)
 	include(Coveralls)
 	coveralls_turn_on_coverage()
@@ -19,6 +22,8 @@ if(NOT CMAKE_SIZEOF_VOID_P EQUAL 8)
 endif()
 
 include_directories(src)
+
+enable_testing()
 
 add_subdirectory(src)
 add_subdirectory(test)

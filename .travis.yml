@@ -2,6 +2,9 @@ dist: bionic
 sudo: required
 language:
   "c++"
+install:
+  - sudo apt-get update -qq
+  - sudo apt-get install -y -qq lcov curl
 before_install:
   - pip install --user cpp-coveralls
 after_success:
@@ -21,4 +24,5 @@ script:
   - ./test/yace_test
   # code coverage tests run in debug mode
   - cmake -DCOVERALLS=ON -DCMAKE_BUILD_TYPE=Debug ..
+  - make
   - make coveralls
