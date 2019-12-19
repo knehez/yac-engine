@@ -352,7 +352,6 @@ TEST(boardTest, possibleMovesBlackPawn)
 
     b = board.allPieceMoves(a5);
     b = b | board.allPieceMoves(h4);
-    str = board.showOneBitBoard(b, a1, h8);
 
     EXPECT_EQ(board.showOneBitBoard(b, a8, h8), "--------");
     EXPECT_EQ(board.showOneBitBoard(b, a7, h7), "--------");

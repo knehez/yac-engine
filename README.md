@@ -6,7 +6,7 @@ Simple 64-bit bitboard based chess engine written in C++. Developed in TDD style
 
 See .travis.yml for installation details.
 
-### Installation steps
+# Installation steps
 
 **1.) Clone repository**
 
@@ -44,4 +44,3 @@ Setup from here
 Usage
 
     opencppcoverage --sources src -- yace_test.exe
-
