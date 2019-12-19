@@ -6,6 +6,14 @@ project(yace VERSION 1.0
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_COMPILE_FEATURES EHsc)
 
+option(COVERALLS "Turn on coveralls support" OFF)
+option(COVERALLS_UPLOAD "Upload the generated coveralls json" ON)
+
+if (COVERALLS)
+	include(Coveralls)
+	coveralls_turn_on_coverage()
+endif()
+
 if(NOT CMAKE_SIZEOF_VOID_P EQUAL 8)
     message(FATAL_ERROR "*** Please switch to x64 build! ***")
 endif()

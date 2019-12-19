@@ -2,8 +2,6 @@ dist: bionic
 sudo: required
 language:
   "c++"
-compiler:
-  - gcc
 before_install:
   - pip install --user cpp-coveralls
 after_success:
@@ -17,7 +15,9 @@ script:
   - cd ../../
   - mkdir build
   - cd build
-  - cmake ..
+  - cmake .. -DCMAKE_BUILD_TYPE=Release
   - make
   - ./test/yace_test
-  - ./configure --enable-gcov && make && make check
+  # code coverage tests run in debug mode
+  - cmake -DCOVERALLS=ON -DCMAKE_BUILD_TYPE=Debug ..
+  - make coveralls

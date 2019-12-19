@@ -5,6 +5,13 @@ file(GLOB_RECURSE TEST_SOURCES LIST_DIRECTORIES false *.h *.cpp)
 set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
 set(SOURCES ${TEST_SOURCES})
 
+if (COVERALLS)
+	coveralls_setup(
+        "${SOURCES}" 
+        ${COVERALLS_UPLOAD}                 
+        "${PROJECT_SOURCE_DIR}/coveralls-cmake/cmake")
+endif()
+
 add_executable(${BINARY} ${TEST_SOURCES})
 
 add_test(NAME ${BINARY} COMMAND ${BINARY})
