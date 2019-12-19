@@ -30,6 +30,9 @@ TEST(boardTest, fenBoardStartingPosition)
     EXPECT_EQ(board.to_string(a2, h2), "PPPPPPPP");
     EXPECT_EQ(board.to_string(a1, h1), "RNBQKBNR");
     EXPECT_EQ(board.getFENCode(), "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR");
+
+    // count pieces
+    EXPECT_EQ(countPiecesOnBoard(board.getBlackPiecesBoard() | board.getBlackPiecesBoard()), 16);
 }
 
 TEST(boardTest, getPiecesAtPositions)
