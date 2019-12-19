@@ -59,4 +59,14 @@ TEST(moveTest, castling)
     // castling e8g8 is possible
     EXPECT_EQ(moves, "a7a5|a7a6|b7b5|b7b6|c7c5|c7c6|d7d5|d7d6|e7e5|e7e6|f7f5|f7f6|g7g5|g7g6|h7h5|h7h6|a8b8|a8c8|a8d8|e8d8|e8f8|g8f6|g8h6|e8c8|");
     EXPECT_EQ(board.castling, board.castling & ~(CASTLING_BLACK_KINGSIDE | CASTLING_BLACK_QUEENSIDE));
+
+    board.setFENCode("rn2k2r/pppppppp/8/8/8/8/PPPPPPPP/R3KB1R b KQkq");
+    moves = board.getMoves();
+    EXPECT_EQ(moves, "a7a5|a7a6|b7b5|b7b6|c7c5|c7c6|d7d5|d7d6|e7e5|e7e6|f7f5|f7f6|g7g5|g7g6|h7h5|h7h6|b8a6|b8c6|e8d8|e8f8|h8f8|h8g8|e8g8|");
+    EXPECT_EQ(board.castling, board.castling & ~(CASTLING_BLACK_KINGSIDE | CASTLING_BLACK_QUEENSIDE));
+
+    board.setFENCode("rn2k2r/pppppppp/8/8/8/8/PPPPPPPP/R3KB1R w KQkq");
+    moves = board.getMoves();
+    EXPECT_EQ(moves, "a1b1|a1c1|a1d1|e1d1|h1g1|a2a3|a2a4|b2b3|b2b4|c2c3|c2c4|d2d3|d2d4|e2e3|e2e4|f2f3|f2f4|g2g3|g2g4|h2h3|h2h4|e1c1|");
+    EXPECT_EQ(board.castling, board.castling & ~(CASTLING_WHITE_KINGSIDE | CASTLING_WHITE_QUEENSIDE));
 }
