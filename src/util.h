@@ -7,9 +7,9 @@ const uint64_t notHFile = 0XFEFEFEFEFEFEFEFE;
 const uint64_t notABFile = 0X3f3f3f3f3f3f3f3f;
 const uint64_t notGHFile = 0XFCFCFCFCFCFCFCFC;
 
-const uint64_t A_FILE = 0x1010101010101010;
-const uint64_t B_FILE = 0x2020202020202020;
-const uint64_t C_FILE = 0x4040404040404040;
+const uint64_t A_FILE = 0x101010101010101;
+const uint64_t B_FILE = 0x202020202020202;
+const uint64_t C_FILE = 0x404040404040404;
 const uint64_t D_FILE = 0x808080808080808;
 const uint64_t E_FILE = 0x1010101010101010;
 const uint64_t F_FILE = 0x2020202020202020;

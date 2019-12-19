@@ -12,7 +12,7 @@ Board::Board()
         }
         // http://cinnamonchess.altervista.org/bitboard_calculator/Calc.html
         int file = x & 7;
-        int rank = x >> 3;
+        int rank = x >> 3;      
         MASK[x].file = FILES[file];
 
         MASK[x].diagonal = 0;
@@ -326,8 +326,19 @@ void Board::move(Move move)
     if (move.captured != NUMBER_OF_PIECES)
     {
         auto &capturedBoard = m_boards[move.captured];
-        // remove captured piece
-        capturedBoard &= ~(1LLU << move.end);
+        if (move.enpassant != NUMBER_OF_SQUARES)
+        {
+            // remove enpassant piece
+            auto hitPosition = (color == BLACK) ? enpassant + 8 : enpassant - 8;
+            capturedBoard &= ~(1LLU << (Position)hitPosition);
+            // switch off enpassant
+            enpassant = NUMBER_OF_SQUARES;
+        }
+        else
+        { // normal hit
+            // remove captured piece
+            capturedBoard &= ~(1LLU << move.end);
+        }
     }
 
     // move piece
@@ -353,8 +364,19 @@ void Board::undoMove(Move move)
     if (move.captured != NUMBER_OF_PIECES)
     {
         auto &capturedBoard = m_boards[move.captured];
-        // put back captured piece
-        capturedBoard |= 1LLU << move.end;
+        if (move.enpassant != NUMBER_OF_SQUARES)
+        {
+            // remove enpassant piece
+            auto hitPosition = (color == WHITE) ? move.enpassant + 8 : move.enpassant - 8;
+            capturedBoard |= 1LLU << (Position)hitPosition;
+            // switch off enpassant
+            enpassant = move.enpassant;
+        }
+        else
+        {
+            // put back captured piece
+            capturedBoard |= 1LLU << move.end;
+        }
     }
     // if there is a promotion then clear the promoted piece
     if (move.promotion != NUMBER_OF_PIECES)
@@ -365,7 +387,10 @@ void Board::undoMove(Move move)
     // move back moving piece
     movingBoard &= ~(1LLU << move.end);
     movingBoard |= (1LLU << move.start);
-
+    if (move.enpassant != NUMBER_OF_SQUARES)
+    {
+        enpassant = NUMBER_OF_SQUARES;
+    }
     color = oppositeColor(color);
 }
 
@@ -401,7 +426,13 @@ std::string Board::generateMoves()
                     tryMove.promotion = (Piece)(nextPromotion + color);
                     nextPromotion += 2;
                 }
-
+                // this move is an enpassant move?
+                if ((tryMove.piece == P || tryMove.piece == p) && tryMove.end == enpassant)
+                {
+                    tryMove.enpassant = enpassant;
+                    auto hitPosition = (color == BLACK) ? enpassant + 8 : enpassant - 8;
+                    tryMove.captured = getPieceAt((Position)hitPosition);
+                }
                 move(tryMove);
                 auto oppositeKingPos = color == BLACK ? getPiecePos(K) : getPiecePos(k);
 
@@ -606,6 +637,13 @@ uint64_t Board::pawnBlackMoves(Position pos)
     uint64_t tmp = 1LLU << pos;
     // move south if there is not any pieces in front of the pawn
     uint64_t ret = SOUTH(tmp) & ~(getWhitePiecesBoard() | getBlackPiecesBoard());
+    // enpassant
+    if (enpassant != NUMBER_OF_SQUARES)
+    {
+        uint64_t entP = 1LLU << enpassant;
+        // move south if there is not any pieces in front of the pawn
+        ret |= ((SOUTH_EAST(tmp) & notHFile) | (SOUTH_WEST(tmp) & notAFile)) & entP;
+    }
     // pawn can move 2 squares if it is on the second row () (0xff00000000)
     ret |= SOUTH_TWO(tmp) & 0xff00000000; // row 'f'
     return ret;
@@ -614,7 +652,7 @@ uint64_t Board::pawnBlackMoves(Position pos)
 uint64_t Board::pawnBlackHitMoves(Position pos)
 {
     uint64_t tmp = 1LLU << pos;
-    // move south if there is not any pieces in front of the pawn
+    // hit south east and west if possible
     uint64_t ret = ((SOUTH_EAST(tmp) & notHFile) | (SOUTH_WEST(tmp) & notAFile));
     return ret;
 }
@@ -632,6 +670,13 @@ uint64_t Board::pawnWhiteMoves(Position pos)
     uint64_t tmp = 1LLU << pos;
     // move north if there is not any pieces in front of the pawn
     uint64_t ret = NORTH(tmp) & ~(getWhitePiecesBoard() | getBlackPiecesBoard());
+    // enpassant
+    if (enpassant != NUMBER_OF_SQUARES)
+    {
+        uint64_t entP = 1LLU << enpassant;
+        // move north if there is not any pieces in front of the pawn
+        ret |= ((NORTH_EAST(tmp) & notAFile) | (NORTH_WEST(tmp) & notHFile)) & entP;
+    }
     // pawn can move 2 squares if it is on the second row (0xff000000)
     ret |= NORTH_TWO(tmp) & 0xff000000; // row 'e'
     return ret;

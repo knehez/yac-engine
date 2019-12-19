@@ -137,3 +137,35 @@ TEST(moveTest, whiteAllPromotionsSimple)
     EXPECT_EQ(board.getFENCode(), "8/1P6/5k2/8/8/5K2/1p6/8");
 }
 
+TEST(moveTest, enPassantSimpleBlack)
+{
+    char *fenCode = "8/8/8/2k5/3Pp3/8/8/4K3 b - d3 0 1";
+    Board board;
+    board.setFENCode(fenCode);
+    auto moves = board.generateMoves();
+    EXPECT_EQ(moves, "e4d3|c5b4|c5c4|c5d4|c5b5|c5d5|c5b6|c5c6|c5d6|");
+    // undo() do not make wrong the boards
+    EXPECT_EQ(board.getFENCode(), "8/8/8/2k5/3Pp3/8/8/4K3");
+}
+
+TEST(moveTest, enPassantSimpleWhite)
+{
+    char *fenCode = "8/8/8/3Pp3/5K2/8/k7/8 w - e6 0 1";
+    Board board;
+    board.setFENCode(fenCode);
+    auto moves = board.generateMoves();
+    EXPECT_EQ(moves, "f4e3|f4f3|f4g3|f4e4|f4g4|f4e5|f4f5|f4g5|d5e6|");
+    // undo() do not make wrong the boards
+    EXPECT_EQ(board.getFENCode(), "8/8/8/3Pp3/5K2/8/k7/8");
+}
+
+TEST(moveTest, enPassantCheckBlack)
+{
+    char *fenCode = "8/8/8/1k6/3Pp3/8/8/4KQ2 b - d3 0 1";
+    Board board;
+    board.setFENCode(fenCode);
+    auto moves = board.generateMoves();
+    EXPECT_EQ(moves, "e4d3|b5a4|b5b4|b5a5|b5b6|b5c6|");
+    // undo() do not make wrong the boards
+    EXPECT_EQ(board.getFENCode(), "8/8/8/1k6/3Pp3/8/8/4KQ2");
+}
