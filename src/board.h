@@ -1,7 +1,7 @@
 #pragma once
 
 #include <string>
-#include "constants.h"
+#include "util.h"
 #include "gtest/gtest_prod.h"
 
 typedef struct move

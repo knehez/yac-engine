@@ -70,3 +70,29 @@ TEST(moveTest, castling)
     EXPECT_EQ(moves, "a1b1|a1c1|a1d1|e1d1|h1g1|a2a3|a2a4|b2b3|b2b4|c2c3|c2c4|d2d3|d2d4|e2e3|e2e4|f2f3|f2f4|g2g3|g2g4|h2h3|h2h4|e1c1|");
     EXPECT_EQ(board.castling, board.castling & ~(CASTLING_WHITE_KINGSIDE | CASTLING_WHITE_QUEENSIDE));
 }
+
+TEST(moveTest, moveUndoMove)
+{
+    char *fenCode = "3k4/4b1p1/1Qp5/8/1R1b4/8/6P1/3K4";
+    Board board;
+    board.setFENCode(fenCode);
+
+    Move m1;
+    Move m2;
+
+    m1.start = d4;
+    m1.end = b6;
+    m1.piece = b;
+    m1.captured = Q;
+
+    m2.start = b4;
+    m2.end = b6;
+    m2.piece = R;
+    m2.captured = b;   
+
+    board.move(m1);
+    board.move(m2);
+    board.undoMove(m2);
+    board.undoMove(m1);
+    EXPECT_EQ(board.getFENCode(), fenCode);
+}

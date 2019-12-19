@@ -179,6 +179,11 @@ std::string Board::getFENCode()
         {
             if (m_boards[j] & (1LLU << boardPos))
             {
+                if (emptyCounter != 0)
+                {
+                    fen += std::to_string(emptyCounter);
+                    emptyCounter = 0;
+                }
                 fen += piecesChars[j];
                 found = true;
                 break;
@@ -255,10 +260,10 @@ void Board::setFENCode(char *fenCode)
 
     // w or b after the first space
     *(fenCode++) == 'w' ? color = WHITE : color = BLACK;
-    
+
     // step out next space
     fenCode++;
-    
+
     castling = 0;
 
     do
@@ -316,19 +321,35 @@ Piece Board::getPieceAt(Position pos)
 
 void Board::move(Move move)
 {
-    auto &board = m_boards[move.piece];
+    auto &movingBoard = m_boards[move.piece];
 
-    board &= ~(1LLU << move.start);
-    board |= 1LLU << move.end;
+    if (move.captured != NUMBER_OF_PIECES)
+    {
+        auto &capturedBoard = m_boards[move.captured];
+        // remove captured piece
+        capturedBoard &= ~(1LLU << move.end);
+    }
+
+    // move piece on the same board
+    movingBoard &= ~(1LLU << move.start);
+    movingBoard |= 1LLU << move.end;
+
     color = oppositeColor(color);
 }
 
 void Board::undoMove(Move move)
 {
-    auto &board = m_boards[move.piece];
+    auto &movingBoard = m_boards[move.piece];
+    if (move.captured != NUMBER_OF_PIECES)
+    {
+        auto &capturedBoard = m_boards[move.captured];
+        // put back captured piece
+        capturedBoard |= 1LLU << move.end;
+    }
+    // move back moving piece
+    movingBoard &= ~(1LLU << move.end);
+    movingBoard |= (1LLU << move.start);
 
-    board &= ~(1LLU << move.end);
-    board |= (1LLU << move.start);
     color = oppositeColor(color);
 }
 
