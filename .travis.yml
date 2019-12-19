@@ -23,6 +23,8 @@ script:
   - make
   - ./test/yace_test
   # code coverage tests run in debug mode
+  - export COVERALLS_SERVICE_NAME=travis-ci
+  - export COVERALLS_REPO_TOKEN=713aLFBKTIEXfmmHWUvv41CqnWOoB90MJ
   - cmake -DCOVERALLS=ON -DCMAKE_BUILD_TYPE=Debug ..
   - make
   - make coveralls
