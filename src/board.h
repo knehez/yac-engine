@@ -35,7 +35,7 @@ public:
     uint64_t getBoard(char piece);
 
     uint64_t allPieceMoves(Position pos);
-    std::string getMoves();
+    std::string generateMoves();
     void clear();
 
     std::string to_string(int startPos = a1, int endPos = h8);

@@ -330,9 +330,19 @@ void Board::move(Move move)
         capturedBoard &= ~(1LLU << move.end);
     }
 
-    // move piece on the same board
+    // move piece
     movingBoard &= ~(1LLU << move.start);
-    movingBoard |= 1LLU << move.end;
+
+    if (move.promotion == NUMBER_OF_PIECES)
+    {
+        // normal move
+        movingBoard |= 1LLU << move.end;
+    }
+    else
+    {
+        auto &promotionBoard = m_boards[move.promotion];
+        promotionBoard |= 1LLU << move.end;
+    }
 
     color = oppositeColor(color);
 }
@@ -346,6 +356,12 @@ void Board::undoMove(Move move)
         // put back captured piece
         capturedBoard |= 1LLU << move.end;
     }
+    // if there is a promotion then clear the promoted piece
+    if (move.promotion != NUMBER_OF_PIECES)
+    {
+        auto &promotionBoard = m_boards[move.promotion];
+        promotionBoard &= ~(1LLU << move.end);
+    }
     // move back moving piece
     movingBoard &= ~(1LLU << move.end);
     movingBoard |= (1LLU << move.start);
@@ -353,7 +369,7 @@ void Board::undoMove(Move move)
     color = oppositeColor(color);
 }
 
-std::string Board::getMoves()
+std::string Board::generateMoves()
 {
     std::string moves;
 
@@ -366,6 +382,8 @@ std::string Board::getMoves()
 
         auto tmpBoard = allPieceMoves(actualPiecePos);
 
+        auto nextPromotion = (int)R;
+
         if (tmpBoard != 0)
         {
             int endPos;
@@ -376,6 +394,13 @@ std::string Board::getMoves()
                 tryMove.end = (Position)endPos;
                 tryMove.piece = getPieceAt((Position)actualPiecePos);
                 tryMove.captured = getPieceAt((Position)endPos);
+                auto piecerank = rank(tryMove.end);
+                // white pawn on the rank H - black pawn on the rank A?
+                if ((piecerank == 7 && tryMove.piece == P) | (piecerank == 0 && tryMove.piece == p))
+                {
+                    tryMove.promotion = (Piece)(nextPromotion + color);
+                    nextPromotion += 2;
+                }
 
                 move(tryMove);
                 auto oppositeKingPos = color == BLACK ? getPiecePos(K) : getPiecePos(k);
@@ -388,6 +413,24 @@ std::string Board::getMoves()
                     moves += algebraicRank(actualPiecePos);
                     moves += algebraicFile(endPos);
                     moves += algebraicRank(endPos);
+                    // is there a promotion?
+                    if (tryMove.promotion != NUMBER_OF_PIECES)
+                    {
+                        moves += "(";
+                        moves += piecesChars[tryMove.promotion];
+                        moves += ")";
+                        if (nextPromotion > Q)
+                        {
+                            // no more promotion, do not put back pawn
+                            // set nextPromotion to 0 (Rook).
+                            nextPromotion = (int)R;
+                        }
+                        else
+                        {
+                            // put back Pawn for the next promotion
+                            tmpBoard |= (1LLU << tryMove.end);
+                        }
+                    }
                     moves += '|';
                 }
                 undoMove(tryMove);

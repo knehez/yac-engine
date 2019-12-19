@@ -47,6 +47,8 @@ int countPiecesOnBoard(uint64_t board);
 #define algebraicRank(pos) '1' + (pos >> 3)
 #define oppositeColor(c) c == WHITE ? BLACK : WHITE
 
+#define rank(p) (p >> 3);
+
 double chrono(void);
 
 enum Castling
