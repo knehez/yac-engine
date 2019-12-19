@@ -2,6 +2,12 @@ dist: bionic
 sudo: required
 language:
   "c++"
+compiler:
+  - gcc
+before_install:
+  - pip install --user cpp-coveralls
+after_success:
+  - coveralls --exclude lib --exclude tests --gcov-options '\-lp'
 script:
   - mkdir lib
   - cd lib
@@ -14,3 +20,4 @@ script:
   - cmake ..
   - make
   - ./test/yace_test
+  - ./configure --enable-gcov && make && make check
