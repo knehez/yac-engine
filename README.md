@@ -1,6 +1,7 @@
 # Yet Another Chess Engine (YAC-Engine)
 
 [![Travis build status](https://api.travis-ci.com/knehez/yac-engine.svg?branch=master)](https://travis-ci.com/knehez/yac-engine)
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/6dc79cb15b5748cba7e4d68d482b3f8b)](https://www.codacy.com/manual/knehez/yac-engine?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=knehez/yac-engine&amp;utm_campaign=Badge_Grade)
 
 Simple 64-bit bitboard based chess engine written in C++. Developed in TDD style.
 
