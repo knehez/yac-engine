@@ -213,7 +213,7 @@ std::string Board::getFENCode()
     return fen;
 }
 
-void Board::setFENCode(char *fenCode)
+void Board::setFENCode(const char *fenCode)
 {
     clear();
     int rowNumber = 7;

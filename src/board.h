@@ -20,7 +20,7 @@ class Board
 public:
     Board();
 
-    void setFENCode(char* fenstr);
+    void setFENCode(const char* fenstr);
     std::string getFENCode();
 
     void move(Move);

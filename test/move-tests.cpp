@@ -73,7 +73,7 @@ TEST(moveTest, castling)
 
 TEST(moveTest, moveUndoMove)
 {
-    char *fenCode = "3k4/4b1p1/1Qp5/8/1R1b4/8/6P1/3K4";
+    const char *fenCode = "3k4/4b1p1/1Qp5/8/1R1b4/8/6P1/3K4";
     Board board;
     board.setFENCode(fenCode);
 
@@ -99,9 +99,8 @@ TEST(moveTest, moveUndoMove)
 
 TEST(moveTest, blackPromotionsSimpleUndo)
 {
-    char *fenCode = "8/1P6/5k2/8/8/5K2/1p6/8 b - - 0 1";
     Board board;
-    board.setFENCode(fenCode);
+    board.setFENCode("8/1P6/5k2/8/8/5K2/1p6/8 b - - 0 1");
     Move m1;
 
     m1.start = b2;
@@ -117,9 +116,8 @@ TEST(moveTest, blackPromotionsSimpleUndo)
 
 TEST(moveTest, blackAllPromotionsSimple)
 {
-    char *fenCode = "8/1P6/5k2/8/8/5K2/1p6/8 b - - 0 1";
     Board board;
-    board.setFENCode(fenCode);
+    board.setFENCode("8/1P6/5k2/8/8/5K2/1p6/8 b - - 0 1");
     auto moves = board.generateMoves();
     EXPECT_EQ(moves, "b2b1(r)|b2b1(n)|b2b1(b)|b2b1(q)|f6e5|f6f5|f6g5|f6e6|f6g6|f6e7|f6f7|f6g7|");
     // undo() do not make wrong the boards
@@ -128,9 +126,8 @@ TEST(moveTest, blackAllPromotionsSimple)
 
 TEST(moveTest, whiteAllPromotionsSimple)
 {
-    char *fenCode = "8/1P6/5k2/8/8/5K2/1p6/8 w - - 0 1";
     Board board;
-    board.setFENCode(fenCode);
+    board.setFENCode("8/1P6/5k2/8/8/5K2/1p6/8 w - - 0 1");
     auto moves = board.generateMoves();
     EXPECT_EQ(moves, "f3e2|f3f2|f3g2|f3e3|f3g3|f3e4|f3f4|f3g4|b7b8(R)|b7b8(N)|b7b8(B)|b7b8(Q)|");
     // undo() do not make wrong the boards
@@ -139,9 +136,8 @@ TEST(moveTest, whiteAllPromotionsSimple)
 
 TEST(moveTest, enPassantSimpleBlack)
 {
-    char *fenCode = "8/8/8/2k5/3Pp3/8/8/4K3 b - d3 0 1";
     Board board;
-    board.setFENCode(fenCode);
+    board.setFENCode("8/8/8/2k5/3Pp3/8/8/4K3 b - d3 0 1");
     auto moves = board.generateMoves();
     EXPECT_EQ(moves, "e4d3|c5b4|c5c4|c5d4|c5b5|c5d5|c5b6|c5c6|c5d6|");
     // undo() do not make wrong the boards
@@ -150,9 +146,8 @@ TEST(moveTest, enPassantSimpleBlack)
 
 TEST(moveTest, enPassantSimpleWhite)
 {
-    char *fenCode = "8/8/8/3Pp3/5K2/8/k7/8 w - e6 0 1";
     Board board;
-    board.setFENCode(fenCode);
+    board.setFENCode("8/8/8/3Pp3/5K2/8/k7/8 w - e6 0 1");
     auto moves = board.generateMoves();
     EXPECT_EQ(moves, "f4e3|f4f3|f4g3|f4e4|f4g4|f4e5|f4f5|f4g5|d5e6|");
     // undo() do not make wrong the boards
@@ -161,9 +156,8 @@ TEST(moveTest, enPassantSimpleWhite)
 
 TEST(moveTest, enPassantCheckBlack)
 {
-    char *fenCode = "8/8/8/1k6/3Pp3/8/8/4KQ2 b - d3 0 1";
     Board board;
-    board.setFENCode(fenCode);
+    board.setFENCode("8/8/8/1k6/3Pp3/8/8/4KQ2 b - d3 0 1");
     auto moves = board.generateMoves();
     EXPECT_EQ(moves, "e4d3|b5a4|b5b4|b5a5|b5b6|b5c6|");
     // undo() do not make wrong the boards

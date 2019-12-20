@@ -3,7 +3,7 @@
 
 #if _WIN64
 #include <intrin.h>
-#include <windows.h>
+#include <Windows.h>
 #elif __linux__
 #include <unistd.h>
 #include <sys/time.h>
@@ -11,7 +11,7 @@
 
 double chrono(void)
 {
-#if __linux__
+#if defined(__linux__)
 #if _POSIX_TIMERS > 0
     struct timespec t;
     clock_gettime(CLOCK_MONOTONIC, &t);
@@ -29,9 +29,9 @@ double chrono(void)
 int countPiecesOnBoard(uint64_t board)
 {
 #if defined(_WIN64)
-    return (int)__popcnt64(board);
+    return static_cast<int>(__popcnt64(board));
 #elif __linux__
-    return __builtin_popcountll(board);
+    return static_cast<int>(__builtin_popcountll(board));
 #endif
 }
 
@@ -40,9 +40,9 @@ Position bitScan64(uint64_t board)
 #if _WIN64
     unsigned long index;
     _BitScanForward64(&index, board);
-    return (Position)index;
+    return static_cast<Position>(index);
 #elif __linux__
-    return (Position)__builtin_ctzll(board);
+    return static_cast<Position>(__builtin_ctzll(board));
 #endif
 }
 
