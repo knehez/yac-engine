@@ -1,6 +1,6 @@
-#include "board.h"
+#include "chessboard.h"
 
-Board::Board()
+ChessBoard::ChessBoard()
 {
     clear();
 
@@ -12,7 +12,7 @@ Board::Board()
         }
         // http://cinnamonchess.altervista.org/bitboard_calculator/Calc.html
         int file = x & 7;
-        int rank = x >> 3;      
+        int rank = x >> 3;
         MASK[x].file = FILES[file];
 
         MASK[x].diagonal = 0;
@@ -81,7 +81,7 @@ Board::Board()
     color = WHITE;
 }
 
-Position Board::nextSquare(uint64_t *board)
+Position ChessBoard::nextSquare(uint64_t *board)
 {
     if (*board == 0)
     {
@@ -92,7 +92,7 @@ Position Board::nextSquare(uint64_t *board)
     return (Position)index;
 }
 
-void Board::clear()
+void ChessBoard::clear()
 {
     for (int i = 0; i < NUMBER_OF_PIECES; i++)
     {
@@ -100,17 +100,17 @@ void Board::clear()
     }
 }
 
-uint64_t Board::getWhitePiecesBoard()
+uint64_t ChessBoard::getWhitePiecesBoard()
 {
     return m_boards[P] | m_boards[R] | m_boards[N] | m_boards[B] | m_boards[Q] | m_boards[K];
 }
 
-uint64_t Board::getBlackPiecesBoard()
+uint64_t ChessBoard::getBlackPiecesBoard()
 {
     return m_boards[p] | m_boards[r] | m_boards[n] | m_boards[b] | m_boards[q] | m_boards[k];
 }
 
-void Board::setPiece(int pos, char piece)
+void ChessBoard::setPiece(int pos, char piece)
 {
     for (int i = 0; i < NUMBER_OF_PIECES; i++)
     {
@@ -122,7 +122,7 @@ void Board::setPiece(int pos, char piece)
     }
 }
 
-uint64_t Board::rankAttack(uint64_t occupancy, Position pos)
+uint64_t ChessBoard::rankAttack(uint64_t occupancy, Position pos)
 {
     int f = pos & 7;
     int r = pos & 56;
@@ -131,7 +131,7 @@ uint64_t Board::rankAttack(uint64_t occupancy, Position pos)
 }
 
 /* Generate attack using the hyperbola quintessence approach */
-uint64_t Board::attack(uint64_t board, Position pos, uint64_t movesMask)
+uint64_t ChessBoard::attack(uint64_t board, Position pos, uint64_t movesMask)
 {
     uint64_t o = board & movesMask;
     uint64_t r = bit_bswap(o);
@@ -139,22 +139,22 @@ uint64_t Board::attack(uint64_t board, Position pos, uint64_t movesMask)
     return ((o - (1ULL << pos)) ^ bit_bswap(r - (1ULL << (pos ^ 56)))) & movesMask;
 }
 
-uint64_t Board::diagonalAttack(uint64_t pieces, Position x)
+uint64_t ChessBoard::diagonalAttack(uint64_t pieces, Position x)
 {
     return attack(pieces, x, MASK[x].diagonal);
 }
 
-uint64_t Board::antidiagonalAttack(uint64_t pieces, Position x)
+uint64_t ChessBoard::antidiagonalAttack(uint64_t pieces, Position x)
 {
     return attack(pieces, x, MASK[x].antidiagonal);
 }
 
-uint64_t Board::fileAttack(uint64_t pieces, Position x)
+uint64_t ChessBoard::fileAttack(uint64_t pieces, Position x)
 {
     return attack(pieces, x, MASK[x].file);
 }
 
-uint64_t Board::getBoard(char piece)
+uint64_t ChessBoard::getBoard(char piece)
 {
     for (int i = 0; i < NUMBER_OF_PIECES; i++)
     {
@@ -166,7 +166,7 @@ uint64_t Board::getBoard(char piece)
     return 0LLU;
 }
 
-std::string Board::getFENCode()
+std::string ChessBoard::getFENCode()
 {
     std::string fen;
     int rowNumber = 7;
@@ -213,7 +213,7 @@ std::string Board::getFENCode()
     return fen;
 }
 
-void Board::setFENCode(const char *fenCode)
+void ChessBoard::setFENCode(const char *fenCode)
 {
     clear();
     int rowNumber = 7;
@@ -307,7 +307,7 @@ void Board::setFENCode(const char *fenCode)
     }
 }
 
-Piece Board::getPieceAt(Position pos)
+Piece ChessBoard::getPieceAt(Position pos)
 {
     for (int j = 0; j < NUMBER_OF_PIECES; j++)
     {
@@ -319,7 +319,7 @@ Piece Board::getPieceAt(Position pos)
     return NUMBER_OF_PIECES;
 }
 
-void Board::move(Move move)
+void ChessBoard::move(Move move)
 {
     auto &movingBoard = m_boards[move.piece];
 
@@ -358,7 +358,7 @@ void Board::move(Move move)
     color = oppositeColor(color);
 }
 
-void Board::undoMove(Move move)
+void ChessBoard::undoMove(Move move)
 {
     auto &movingBoard = m_boards[move.piece];
     if (move.captured != NUMBER_OF_PIECES)
@@ -394,7 +394,38 @@ void Board::undoMove(Move move)
     color = oppositeColor(color);
 }
 
-std::string Board::generateMoves()
+bool ChessBoard::isMate()
+{
+    auto moves = generateMoves();
+    auto kingPosition = (color == WHITE) ? getPiecePos(K) : getPiecePos(k);
+    auto oppositeColor = (color == WHITE) ? BLACK : WHITE;
+    // mate: no moves and king is in check
+    if (moves == "" && isSqareAttacked(kingPosition, &m_boards[0], oppositeColor) == true)
+    {
+        return true;
+    }
+    else
+    {
+        return false;
+    }
+}
+
+bool ChessBoard::isStaleMate()
+{
+    auto moves = generateMoves();
+    auto kingPosition = (color == WHITE) ? getPiecePos(K) : getPiecePos(k);
+    // stale mate: no moves and king is not is check
+    if (moves == "" && isSqareAttacked(kingPosition, &m_boards[0], color) == false)
+    {
+        return true;
+    }
+    else
+    {
+        return false;
+    }
+}
+
+std::string ChessBoard::generateMoves()
 {
     std::string moves;
 
@@ -536,7 +567,7 @@ std::string Board::generateMoves()
     return moves;
 }
 
-bool Board::isSqareAttacked(Position square, uint64_t *board, Color oppositeColor)
+bool ChessBoard::isSqareAttacked(Position square, uint64_t *board, Color oppositeColor)
 {
     auto oppositeKnights = board[N + oppositeColor];
     auto oppositePawns = board[P + oppositeColor];
@@ -552,7 +583,7 @@ bool Board::isSqareAttacked(Position square, uint64_t *board, Color oppositeColo
 }
 
 // good for piceces where there is only one
-Position Board::getPiecePos(Piece piece)
+Position ChessBoard::getPiecePos(Piece piece)
 {
     // select board
     auto board = m_boards[piece];
@@ -561,12 +592,13 @@ Position Board::getPiecePos(Piece piece)
     return (Position)index;
 }
 
-uint64_t Board::allPieceMoves(Position pos)
+uint64_t ChessBoard::allPieceMoves(Position pos)
 {
     Piece piece = getPieceAt((Position)pos);
 
     auto notOwnPieces = (color == WHITE ? ~getWhitePiecesBoard() : ~getBlackPiecesBoard());
     uint64_t oppositePieces;
+    Position oppositeKingPos;
 
     switch (piece)
     {
@@ -578,7 +610,8 @@ uint64_t Board::allPieceMoves(Position pos)
         return bishopMoves(pos) & notOwnPieces;
     case K:
     case k:
-        return kingMoves(pos) & notOwnPieces;
+        oppositeKingPos = color == BLACK ? getPiecePos(K) : getPiecePos(k);
+        return (kingMoves(pos) & ~kingMoves(oppositeKingPos)) & notOwnPieces;
     case P:
         oppositePieces = color == BLACK ? getWhitePiecesBoard() : getBlackPiecesBoard();
         return pawnWhiteMoves(pos) | (pawnWhiteHitMoves(pos) & oppositePieces);
@@ -596,7 +629,7 @@ uint64_t Board::allPieceMoves(Position pos)
     }
 }
 
-uint64_t Board::rookMoves(Position pos)
+uint64_t ChessBoard::rookMoves(Position pos)
 {
     auto allPiecesAsBitmap = getWhitePiecesBoard() | getBlackPiecesBoard();
     auto removeRookAtPosition = ~(1LLU << (Position)pos);
@@ -606,7 +639,7 @@ uint64_t Board::rookMoves(Position pos)
     return rank | file;
 }
 
-uint64_t Board::bishopMoves(Position pos)
+uint64_t ChessBoard::bishopMoves(Position pos)
 {
     auto allPiecesAsBitmap = getWhitePiecesBoard() | getBlackPiecesBoard();
     auto notBishopAtPosition = ~(1LLU << (Position)pos);
@@ -618,7 +651,7 @@ uint64_t Board::bishopMoves(Position pos)
     return diagonal | antiDiagonal;
 }
 
-uint64_t Board::knightMoves(Position pos)
+uint64_t ChessBoard::knightMoves(Position pos)
 {
     uint64_t tmp = 1LLU << pos;
     uint64_t ret = KNIGHT_NORTH_EAST(tmp) & notHFile;
@@ -632,11 +665,18 @@ uint64_t Board::knightMoves(Position pos)
     return ret;
 }
 
-uint64_t Board::pawnBlackMoves(Position pos)
+uint64_t ChessBoard::pawnBlackMoves(Position pos)
 {
     uint64_t tmp = 1LLU << pos;
     // move south if there is not any pieces in front of the pawn
     uint64_t ret = SOUTH(tmp) & ~(getWhitePiecesBoard() | getBlackPiecesBoard());
+
+    // if pawn can move 1 square, we can try move 2 squares
+    // if it is on the second row (0xff00000000)
+    if (ret)
+    {
+        ret |= SOUTH_TWO(tmp) & 0xff00000000;
+    }
     // enpassant
     if (enpassant != NUMBER_OF_SQUARES)
     {
@@ -644,12 +684,10 @@ uint64_t Board::pawnBlackMoves(Position pos)
         // move south if there is not any pieces in front of the pawn
         ret |= ((SOUTH_EAST(tmp) & notHFile) | (SOUTH_WEST(tmp) & notAFile)) & entP;
     }
-    // pawn can move 2 squares if it is on the second row () (0xff00000000)
-    ret |= SOUTH_TWO(tmp) & 0xff00000000; // row 'f'
     return ret;
 }
 
-uint64_t Board::pawnBlackHitMoves(Position pos)
+uint64_t ChessBoard::pawnBlackHitMoves(Position pos)
 {
     uint64_t tmp = 1LLU << pos;
     // hit south east and west if possible
@@ -657,7 +695,7 @@ uint64_t Board::pawnBlackHitMoves(Position pos)
     return ret;
 }
 
-uint64_t Board::pawnWhiteHitMoves(Position pos)
+uint64_t ChessBoard::pawnWhiteHitMoves(Position pos)
 {
     uint64_t tmp = 1LLU << pos;
     // move south if there is not any pieces in front of the pawn
@@ -665,11 +703,18 @@ uint64_t Board::pawnWhiteHitMoves(Position pos)
     return ret;
 }
 
-uint64_t Board::pawnWhiteMoves(Position pos)
+uint64_t ChessBoard::pawnWhiteMoves(Position pos)
 {
     uint64_t tmp = 1LLU << pos;
     // move north if there is not any pieces in front of the pawn
     uint64_t ret = NORTH(tmp) & ~(getWhitePiecesBoard() | getBlackPiecesBoard());
+
+    // if pawn can move 1 square, we can try move 2 squares
+    // if it is on the second row (0xff000000)
+    if (ret)
+    {
+        ret |= NORTH_TWO(tmp) & 0xff000000;
+    }
     // enpassant
     if (enpassant != NUMBER_OF_SQUARES)
     {
@@ -677,12 +722,10 @@ uint64_t Board::pawnWhiteMoves(Position pos)
         // move north if there is not any pieces in front of the pawn
         ret |= ((NORTH_EAST(tmp) & notAFile) | (NORTH_WEST(tmp) & notHFile)) & entP;
     }
-    // pawn can move 2 squares if it is on the second row (0xff000000)
-    ret |= NORTH_TWO(tmp) & 0xff000000; // row 'e'
     return ret;
 }
 
-uint64_t Board::kingMoves(Position pos)
+uint64_t ChessBoard::kingMoves(Position pos)
 {
     uint64_t tmp = 1LLU << pos;
     uint64_t ret = NORTH(tmp);
@@ -696,7 +739,7 @@ uint64_t Board::kingMoves(Position pos)
     return ret;
 }
 
-std::string Board::showOneBitBoard(uint64_t board, int startPos, int endPos)
+std::string ChessBoard::showOneBitBoard(uint64_t board, int startPos, int endPos)
 {
     std::string out;
     int rowNumber = endPos / 8;
@@ -728,7 +771,7 @@ std::string Board::showOneBitBoard(uint64_t board, int startPos, int endPos)
     return out;
 }
 
-std::string Board::to_string(int startPos, int endPos)
+std::string ChessBoard::to_string(int startPos, int endPos)
 {
     std::string out;
     int rowNumber = endPos / 8;
@@ -767,21 +810,7 @@ std::string Board::to_string(int startPos, int endPos)
     return out;
 }
 
-void Board::trimWhiteSpaces(std::string &str)
-{
-    if (str.empty())
-        return;
-
-    // Trim spaces from right side
-    size_t len = str.size();
-
-    while (str.rfind("\n") == --len)
-    {
-        str.erase(len, len + 1);
-    }
-}
-
-int Board::generate_rank_attack(int o, int f)
+int ChessBoard::generate_rank_attack(int o, int f)
 {
     int x, y;
     int b;

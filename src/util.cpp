@@ -1,5 +1,6 @@
 #include "util.h"
 #include <time.h>
+#include <string>
 
 #if _WIN64
 #include <intrin.h>
@@ -53,4 +54,18 @@ uint64_t bit_bswap(uint64_t board)
 #elif __linux__
     return __builtin_bswap64(board);
 #endif
+}
+
+void trimWhiteSpaces(std::string &str)
+{
+    if (str.empty())
+        return;
+
+    // Trim spaces from right side
+    size_t len = str.size();
+
+    while (str.rfind("\n") == --len)
+    {
+        str.erase(len, len + 1);
+    }
 }

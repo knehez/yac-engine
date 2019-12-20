@@ -1,9 +1,9 @@
 #include "gtest/gtest.h"
-#include "board.h"
+#include "chessboard.h"
 
 TEST(moveTest, initialPositionWhite)
 {
-    Board board;
+    ChessBoard board;
     board.setFENCode("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR b KQkq - 0 1");
 
     auto moves = board.generateMoves();
@@ -12,7 +12,7 @@ TEST(moveTest, initialPositionWhite)
 
 TEST(moveTest, initialPositionBlack)
 {
-    Board board;
+    ChessBoard board;
     board.setFENCode("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
 
     auto moves = board.generateMoves();
@@ -21,7 +21,7 @@ TEST(moveTest, initialPositionBlack)
 
 TEST(moveTest, whiteCheckers)
 {
-    Board board;
+    ChessBoard board;
     board.setFENCode("1Q3B2/8/R2k4/2P1PN2/8/8/8/8 b - - 0 1");
 
     auto b = board.isSqareAttacked(board.getPiecePos(k), &board.m_boards[0], oppositeColor(BLACK));
@@ -31,7 +31,7 @@ TEST(moveTest, whiteCheckers)
 
 TEST(moveTest, escapeFromCheck)
 {
-    Board board;
+    ChessBoard board;
     board.setFENCode("1Q3B2/8/R2k4/2P1PN2/8/8/8/8 b - - 0 1");
     auto moves = board.generateMoves();
     EXPECT_EQ(moves, "d6d5|d6d7|");
@@ -39,7 +39,7 @@ TEST(moveTest, escapeFromCheck)
 
 TEST(moveTest, escapeFromCheck2)
 {
-    Board board;
+    ChessBoard board;
     board.setFENCode("K7/PN6/8/3b4/8/8/8/3k4 w - - 0 1");
     auto moves = board.generateMoves();
     EXPECT_EQ(moves, "a8b8|");
@@ -47,7 +47,7 @@ TEST(moveTest, escapeFromCheck2)
 
 TEST(moveTest, castling)
 {
-    Board board;
+    ChessBoard board;
     board.setFENCode("r3k1nr/pppppppp/8/8/8/8/PPPPPPPP/R1B1K2R w KQkq - 0 1");
     auto moves = board.generateMoves();
     // castling e1g1 is possible
@@ -74,7 +74,7 @@ TEST(moveTest, castling)
 TEST(moveTest, moveUndoMove)
 {
     const char *fenCode = "3k4/4b1p1/1Qp5/8/1R1b4/8/6P1/3K4";
-    Board board;
+    ChessBoard board;
     board.setFENCode(fenCode);
 
     Move m1;
@@ -99,7 +99,7 @@ TEST(moveTest, moveUndoMove)
 
 TEST(moveTest, blackPromotionsSimpleUndo)
 {
-    Board board;
+    ChessBoard board;
     board.setFENCode("8/1P6/5k2/8/8/5K2/1p6/8 b - - 0 1");
     Move m1;
 
@@ -116,7 +116,7 @@ TEST(moveTest, blackPromotionsSimpleUndo)
 
 TEST(moveTest, blackAllPromotionsSimple)
 {
-    Board board;
+    ChessBoard board;
     board.setFENCode("8/1P6/5k2/8/8/5K2/1p6/8 b - - 0 1");
     auto moves = board.generateMoves();
     EXPECT_EQ(moves, "b2b1(r)|b2b1(n)|b2b1(b)|b2b1(q)|f6e5|f6f5|f6g5|f6e6|f6g6|f6e7|f6f7|f6g7|");
@@ -126,7 +126,7 @@ TEST(moveTest, blackAllPromotionsSimple)
 
 TEST(moveTest, whiteAllPromotionsSimple)
 {
-    Board board;
+    ChessBoard board;
     board.setFENCode("8/1P6/5k2/8/8/5K2/1p6/8 w - - 0 1");
     auto moves = board.generateMoves();
     EXPECT_EQ(moves, "f3e2|f3f2|f3g2|f3e3|f3g3|f3e4|f3f4|f3g4|b7b8(R)|b7b8(N)|b7b8(B)|b7b8(Q)|");
@@ -136,7 +136,7 @@ TEST(moveTest, whiteAllPromotionsSimple)
 
 TEST(moveTest, enPassantSimpleBlack)
 {
-    Board board;
+    ChessBoard board;
     board.setFENCode("8/8/8/2k5/3Pp3/8/8/4K3 b - d3 0 1");
     auto moves = board.generateMoves();
     EXPECT_EQ(moves, "e4d3|c5b4|c5c4|c5d4|c5b5|c5d5|c5b6|c5c6|c5d6|");
@@ -146,7 +146,7 @@ TEST(moveTest, enPassantSimpleBlack)
 
 TEST(moveTest, enPassantSimpleWhite)
 {
-    Board board;
+    ChessBoard board;
     board.setFENCode("8/8/8/3Pp3/5K2/8/k7/8 w - e6 0 1");
     auto moves = board.generateMoves();
     EXPECT_EQ(moves, "f4e3|f4f3|f4g3|f4e4|f4g4|f4e5|f4f5|f4g5|d5e6|");
@@ -156,10 +156,48 @@ TEST(moveTest, enPassantSimpleWhite)
 
 TEST(moveTest, enPassantCheckBlack)
 {
-    Board board;
+    ChessBoard board;
     board.setFENCode("8/8/8/1k6/3Pp3/8/8/4KQ2 b - d3 0 1");
     auto moves = board.generateMoves();
     EXPECT_EQ(moves, "e4d3|b5a4|b5b4|b5a5|b5b6|b5c6|");
     // undo() do not make wrong the boards
     EXPECT_EQ(board.getFENCode(), "8/8/8/1k6/3Pp3/8/8/4KQ2");
+}
+
+TEST(moveTest, isInMate)
+{
+    ChessBoard board;
+    board.setFENCode("R3k3/8/4K3/8/8/8/8/8 b - - 0 1");
+
+    EXPECT_EQ(board.isMate(), true);
+}
+
+TEST(moveTest, isInStaleMate)
+{
+    ChessBoard board;
+    board.setFENCode("8/8/8/8/3b4/5k1p/7P/7K w - - 0 1");
+
+    EXPECT_EQ(board.isStaleMate(), true);
+
+    // similar situation with black
+    board.setFENCode("k7/p2K4/N7/2N5/8/8/8/8 b - - 0 1");
+    EXPECT_EQ(board.isStaleMate(), true);
+}
+
+TEST(moveTest, doubleChecksBlack)
+{
+    ChessBoard board;
+    board.setFENCode("3nk3/3p2N1/5b2/4R3/2B5/8/8/3K4 b - - 0 1");
+
+    auto moves = board.generateMoves();
+    EXPECT_EQ(moves, "e8f8|");
+}
+
+TEST(moveTest, pinnedRook)
+{
+    ChessBoard board;
+    board.setFENCode("4k3/8/4r3/8/4Q3/8/8/3K4 b - - 0 1");
+    
+    auto moves = board.generateMoves();
+    EXPECT_EQ(moves, "e6e4|e6e5|e6e7|e8d7|e8e7|e8f7|e8d8|e8f8|");
 }

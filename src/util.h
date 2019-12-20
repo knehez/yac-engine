@@ -1,6 +1,7 @@
 #pragma once
 
 #include <stdint.h>
+#include <string>
 
 const uint64_t notAFile = 0X7F7F7F7F7F7F7F7F;
 const uint64_t notHFile = 0XFEFEFEFEFEFEFEFE;
@@ -42,6 +43,7 @@ const uint64_t FILES[8] = {A_FILE, B_FILE, C_FILE, D_FILE, E_FILE, F_FILE, G_FIL
 int countBits(uint64_t b);
 uint64_t bit_bswap(uint64_t board);
 int countPiecesOnBoard(uint64_t board);
+void trimWhiteSpaces(std::string &str);
 
 #define algebraicFile(pos) 'a' + (pos & 7)
 #define algebraicRank(pos) '1' + (pos >> 3)

@@ -15,10 +15,10 @@ typedef struct move
     Position enpassant = NUMBER_OF_SQUARES;
 } Move;
 
-class Board
+class ChessBoard
 {
 public:
-    Board();
+    ChessBoard();
 
     void setFENCode(const char* fenstr);
     std::string getFENCode();
@@ -36,6 +36,9 @@ public:
 
     uint64_t allPieceMoves(Position pos);
     std::string generateMoves();
+
+    bool isMate();
+    bool isStaleMate();
     void clear();
 
     std::string to_string(int startPos = a1, int endPos = h8);
@@ -68,7 +71,6 @@ private:
     bool isSqareAttacked(Position square, uint64_t *board, Color oppositecolor);
 
     int generate_rank_attack(int o, int f);
-    void trimWhiteSpaces(std::string &str);
 
     // DATA
     Mask MASK[NUMBER_OF_SQUARES];
