@@ -164,3 +164,13 @@ enum Position
 };
 
 Position bitScan64(uint64_t board);
+
+typedef struct move
+{
+    Position start;
+    Position end;
+    Piece promotion = NUMBER_OF_PIECES;
+
+    Piece captured = NUMBER_OF_PIECES;
+    Position enpassant = NUMBER_OF_SQUARES;
+} Move;

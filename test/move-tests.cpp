@@ -82,12 +82,10 @@ TEST(moveTest, moveUndoMove)
 
     m1.start = d4;
     m1.end = b6;
-    m1.piece = b;
     m1.captured = Q;
 
     m2.start = b4;
     m2.end = b6;
-    m2.piece = R;
     m2.captured = b;
 
     board.move(m1);
@@ -105,8 +103,7 @@ TEST(moveTest, blackPromotionsSimpleUndo)
 
     m1.start = b2;
     m1.end = b1;
-    m1.piece = p;
-    m1.captured = NUMBER_OF_PIECES;
+
     m1.promotion = r;
     board.move(m1);
     board.undoMove(m1);
@@ -140,7 +137,6 @@ TEST(moveTest, enPassantSimpleBlack)
     board.setFENCode("8/8/8/2k5/3Pp3/8/8/4K3 b - d3 0 1");
     auto moves = board.generateMoves();
     EXPECT_EQ(moves, "e4d3|c5b4|c5c4|c5d4|c5b5|c5d5|c5b6|c5c6|c5d6|");
-    // undo() do not make wrong the boards
     EXPECT_EQ(board.getFENCode(), "8/8/8/2k5/3Pp3/8/8/4K3");
 }
 
@@ -197,7 +193,7 @@ TEST(moveTest, pinnedRook)
 {
     ChessBoard board;
     board.setFENCode("4k3/8/4r3/8/4Q3/8/8/3K4 b - - 0 1");
-    
+
     auto moves = board.generateMoves();
     EXPECT_EQ(moves, "e6e4|e6e5|e6e7|e8d7|e8e7|e8f7|e8d8|e8f8|");
 }

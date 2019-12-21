@@ -321,7 +321,7 @@ Piece ChessBoard::getPieceAt(Position pos)
 
 void ChessBoard::move(Move move)
 {
-    auto &movingBoard = m_boards[move.piece];
+    auto &movingBoard = m_boards[getPieceAt(move.start)];
 
     if (move.captured != NUMBER_OF_PIECES)
     {
@@ -360,7 +360,15 @@ void ChessBoard::move(Move move)
 
 void ChessBoard::undoMove(Move move)
 {
-    auto &movingBoard = m_boards[move.piece];
+    auto movingBoard = &m_boards[getPieceAt(move.end)];
+    // if there is a promotion then clear the promoted piece
+    if (move.promotion != NUMBER_OF_PIECES)
+    {
+        // delete promoted piece
+        m_boards[move.promotion] &= ~(1LLU << move.end);
+        Piece bb = (Piece)(P + oppositeColor(color));
+        movingBoard = &m_boards[bb];
+    }
     if (move.captured != NUMBER_OF_PIECES)
     {
         auto &capturedBoard = m_boards[move.captured];
@@ -378,15 +386,9 @@ void ChessBoard::undoMove(Move move)
             capturedBoard |= 1LLU << move.end;
         }
     }
-    // if there is a promotion then clear the promoted piece
-    if (move.promotion != NUMBER_OF_PIECES)
-    {
-        auto &promotionBoard = m_boards[move.promotion];
-        promotionBoard &= ~(1LLU << move.end);
-    }
     // move back moving piece
-    movingBoard &= ~(1LLU << move.end);
-    movingBoard |= (1LLU << move.start);
+    *movingBoard &= ~(1LLU << move.end);
+    *movingBoard |= (1LLU << move.start);
     if (move.enpassant != NUMBER_OF_SQUARES)
     {
         enpassant = NUMBER_OF_SQUARES;
@@ -448,17 +450,17 @@ std::string ChessBoard::generateMoves()
                 Move tryMove;
                 tryMove.start = (Position)actualPiecePos;
                 tryMove.end = (Position)endPos;
-                tryMove.piece = getPieceAt((Position)actualPiecePos);
+                Piece piece = getPieceAt((Position)actualPiecePos);
                 tryMove.captured = getPieceAt((Position)endPos);
                 auto piecerank = rank(tryMove.end);
                 // white pawn on the rank H - black pawn on the rank A?
-                if ((piecerank == 7 && tryMove.piece == P) | (piecerank == 0 && tryMove.piece == p))
+                if ((piecerank == 7 && piece == P) | (piecerank == 0 && piece == p))
                 {
                     tryMove.promotion = (Piece)(nextPromotion + color);
                     nextPromotion += 2;
                 }
                 // this move is an enpassant move?
-                if ((tryMove.piece == P || tryMove.piece == p) && tryMove.end == enpassant)
+                if ((piece == P || piece == p) && tryMove.end == enpassant)
                 {
                     tryMove.enpassant = enpassant;
                     auto hitPosition = (color == BLACK) ? enpassant + 8 : enpassant - 8;

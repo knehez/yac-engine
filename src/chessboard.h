@@ -4,23 +4,12 @@
 #include "util.h"
 #include "gtest/gtest_prod.h"
 
-typedef struct move
-{
-    Position start;
-    Position end;
-    Piece piece;
-    Piece captured = NUMBER_OF_PIECES;
-    Piece promotion = NUMBER_OF_PIECES;
-    unsigned short castling = 0;
-    Position enpassant = NUMBER_OF_SQUARES;
-} Move;
-
 class ChessBoard
 {
 public:
     ChessBoard();
 
-    void setFENCode(const char* fenstr);
+    void setFENCode(const char *fenstr);
     std::string getFENCode();
 
     void move(Move);
@@ -71,12 +60,11 @@ private:
     bool isSqareAttacked(Position square, uint64_t *board, Color oppositecolor);
 
     int generate_rank_attack(int o, int f);
-
-    // DATA
-    Mask MASK[NUMBER_OF_SQUARES];
-    uint64_t m_boards[NUMBER_OF_PIECES];
-    uint8_t RANK_ATTACK[512];
+    //
+    // DATA - currentColor, pieces on the board
+    //
     Color color;
+    uint64_t m_boards[NUMBER_OF_PIECES];
 
     FRIEND_TEST(boardTest, castlingFEN);
     FRIEND_TEST(moveTest, castling);
@@ -86,4 +74,10 @@ private:
     FRIEND_TEST(boardTest, entpassant);
     // enpassant position
     Position enpassant = NUMBER_OF_SQUARES;
+    Piece captured = NUMBER_OF_PIECES;
+    //
+    // CONST DATA - does not change within a party
+    //
+    Mask MASK[NUMBER_OF_SQUARES];
+    uint8_t RANK_ATTACK[512];
 };

@@ -22,6 +22,7 @@ if(NOT CMAKE_SIZEOF_VOID_P EQUAL 8)
 endif()
 
 include_directories(src)
+include(CTest)
 
 enable_testing()
 
