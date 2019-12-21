@@ -11,6 +11,8 @@ public:
 
     void setFENCode(const char *fenstr);
     std::string getFENCode();
+    
+    uint64_t perft(int depth);
 
     void move(Move);
     void undoMove(Move);
@@ -24,7 +26,7 @@ public:
     uint64_t getBoard(char piece);
 
     uint64_t allPieceMoves(Position pos);
-    std::string generateMoves();
+    Moves generateMoves(Moves moves);
 
     bool isMate();
     bool isStaleMate();
@@ -67,7 +69,10 @@ private:
     uint64_t m_boards[NUMBER_OF_PIECES];
 
     FRIEND_TEST(boardTest, castlingFEN);
-    FRIEND_TEST(moveTest, castling);
+    FRIEND_TEST(moveTest, castling1);
+    FRIEND_TEST(moveTest, castling2);
+    FRIEND_TEST(moveTest, castling3);
+    FRIEND_TEST(moveTest, castling4);
     // king and queen sides are enabled by default
     unsigned short castling = CASTLING_BLACK_KINGSIDE | CASTLING_BLACK_QUEENSIDE | CASTLING_WHITE_KINGSIDE | CASTLING_WHITE_QUEENSIDE;
 

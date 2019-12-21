@@ -174,3 +174,15 @@ typedef struct move
     Piece captured = NUMBER_OF_PIECES;
     Position enpassant = NUMBER_OF_SQUARES;
 } Move;
+
+enum
+{
+    MAX_MOVES = 256
+};
+
+typedef struct Moves {
+	Move move[MAX_MOVES];
+	int length = 0;
+} Moves;
+
+std::string to_string(Moves moves); 

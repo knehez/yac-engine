@@ -69,3 +69,23 @@ void trimWhiteSpaces(std::string &str)
         str.erase(len, len + 1);
     }
 }
+
+std::string to_string(Moves moves)
+{
+    std::string strMove;
+    for (int i = 0; i < moves.length; i++)
+    {
+        strMove += algebraicFile(moves.move[i].start);
+        strMove += algebraicRank(moves.move[i].start);
+        strMove += algebraicFile(moves.move[i].end);
+        strMove += algebraicRank(moves.move[i].end);
+        if (moves.move[i].promotion != NUMBER_OF_PIECES)
+        {
+            strMove += "(";
+            strMove += piecesChars[moves.move[i].promotion];
+            strMove += ")";
+        }
+        strMove += "|";
+    }
+    return strMove;
+}
