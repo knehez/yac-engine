@@ -586,7 +586,10 @@ Moves ChessBoard::generateMoves(Moves moves)
     auto startMove = &moves.move[0];
     auto currentMove = startMove;
     uint64_t board;
-    state->color == WHITE ? board = getWhitePiecesBoard() : board = getBlackPiecesBoard();
+    state->occupied[WHITE] = getWhitePiecesBoard();
+    state->occupied[BLACK] = getBlackPiecesBoard();
+
+    state->color == WHITE ? board = state->occupied[WHITE] : board = state->occupied[BLACK];
 
     uint64_t tempBoard[NUMBER_OF_PIECES];
 
@@ -607,7 +610,7 @@ Moves ChessBoard::generateMoves(Moves moves)
                 currentMove->captured = getPieceAt((Position)endPos);
 
                 auto piecerank = rank(currentMove->end);
-                
+
                 memcpy(&tempBoard, &state->boards[0], sizeof(uint64_t) * NUMBER_OF_PIECES);
 
                 // this move is an enpassant move?
@@ -794,7 +797,7 @@ uint64_t ChessBoard::allPieceMoves(Position pos)
 {
     Piece piece = getPieceAt((Position)pos);
 
-    auto notOwnPieces = (state->color == WHITE ? ~getWhitePiecesBoard() : ~getBlackPiecesBoard());
+    uint64_t notOwnPieces;
     uint64_t oppositePieces;
     Position oppositeKingPos;
 
@@ -802,25 +805,30 @@ uint64_t ChessBoard::allPieceMoves(Position pos)
     {
     case N:
     case n:
+        notOwnPieces = (state->color == WHITE ? ~state->occupied[WHITE] : ~state->occupied[BLACK]);
         return knightMoves(pos) & notOwnPieces;
     case B:
     case b:
+        notOwnPieces = (state->color == WHITE ? ~state->occupied[WHITE] : ~state->occupied[BLACK]);
         return bishopMoves(pos) & notOwnPieces;
     case K:
     case k:
+        notOwnPieces = (state->color == WHITE ? ~state->occupied[WHITE] : ~state->occupied[BLACK]);
         oppositeKingPos = state->color == BLACK ? getPiecePos(K) : getPiecePos(k);
         return (kingMoves(pos) & ~kingMoves(oppositeKingPos)) & notOwnPieces;
     case P:
-        oppositePieces = state->color == BLACK ? getWhitePiecesBoard() : getBlackPiecesBoard();
+        oppositePieces = state->color == BLACK ? state->occupied[WHITE] : state->occupied[BLACK];
         return pawnWhiteMoves(pos) | (pawnWhiteHitMoves(pos) & oppositePieces);
     case p:
-        oppositePieces = state->color == BLACK ? getWhitePiecesBoard() : getBlackPiecesBoard();
+        oppositePieces = state->color == BLACK ? state->occupied[WHITE] : state->occupied[BLACK];
         return pawnBlackMoves(pos) | (pawnBlackHitMoves(pos) & oppositePieces);
     case R:
     case r:
+        notOwnPieces = (state->color == WHITE ? ~state->occupied[WHITE] : ~state->occupied[BLACK]);
         return rookMoves(pos) & notOwnPieces;
     case Q:
     case q:
+        notOwnPieces = (state->color == WHITE ? ~state->occupied[WHITE] : ~state->occupied[BLACK]);
         return (rookMoves(pos) | bishopMoves(pos)) & notOwnPieces;
     default:
         return 0;

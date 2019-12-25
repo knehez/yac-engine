@@ -6,11 +6,15 @@
 #include <vector>
 #include <iostream>
 #include <fstream>
+#if __linux__
+    #include <string.h>
+#endif
 
 struct BoardState
 {
     Color color = WHITE;
     uint64_t boards[NUMBER_OF_PIECES];
+    uint64_t occupied[NUMBER_OF_COLORS];
     uint16_t castling = CASTLING_BLACK_KINGSIDE | CASTLING_BLACK_QUEENSIDE | CASTLING_WHITE_KINGSIDE | CASTLING_WHITE_QUEENSIDE;
     Position enpassant = NUMBER_OF_SQUARES;
 };
