@@ -309,6 +309,8 @@ void ChessBoard::setFENCode(const char *fenCode)
         int pos = rank * 8 + file;
         state->enpassant = (Position)pos;
     }
+    state->occupied[WHITE] = getWhitePiecesBoard();
+    state->occupied[BLACK] = getBlackPiecesBoard();
 }
 
 Piece ChessBoard::getPieceAt(Position pos)
