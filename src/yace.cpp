@@ -3,17 +3,19 @@
 
 int main()
 {
+	ChessBoard board;
+	board.setFENCode("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
+
 	double time = -chrono();
 
-	// complex move from starting position
-	ChessBoard board;
-	const char* fenCode = "rnbqkbnr/p1pppp1p/1p6/P5p1/7P/8/1PPPPPP1/RNBQKBNR w KQkq - 0 1";
-	board.setFENCode(fenCode);
+	auto count = board.perft(6);
+	board.fenFile.close();
 
-	// std::cout << board.generateMoves(m) << "\n";
-	
 	time += chrono();
-	printf("%10.3f sec\n", time);
+
+	printf("Number of captures: %llu\n", board.perftCaptures);
+	printf("Number of checks: %llu\n", board.perftChecks);
+	printf("%llu moves %10.3f sec - %f moves/sec \n", count, time, count / time);
 
 	return 0;
 }

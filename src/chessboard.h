@@ -3,15 +3,27 @@
 #include <string>
 #include "util.h"
 #include "gtest/gtest_prod.h"
+#include <vector>
+#include <iostream>
+#include <fstream>
+
+struct BoardState
+{
+    Color color = WHITE;
+    uint64_t boards[NUMBER_OF_PIECES];
+    uint16_t castling = CASTLING_BLACK_KINGSIDE | CASTLING_BLACK_QUEENSIDE | CASTLING_WHITE_KINGSIDE | CASTLING_WHITE_QUEENSIDE;
+    Position enpassant = NUMBER_OF_SQUARES;
+};
 
 class ChessBoard
 {
 public:
     ChessBoard();
-
+    std::ofstream fenFile;
+    std::vector<Move> matchMoves;
     void setFENCode(const char *fenstr);
     std::string getFENCode();
-    
+
     uint64_t perft(int depth);
 
     void move(Move);
@@ -34,8 +46,14 @@ public:
 
     std::string to_string(int startPos = a1, int endPos = h8);
     std::string showOneBitBoard(uint64_t board, int startPos = a1, int endPos = h8);
+    //
+    // misc - data
+    //
+    uint64_t perftCaptures = 0;
+    uint64_t perftChecks = 0;
 
 private:
+    //restoreBoard();
     FRIEND_TEST(boardTest, rankAttack);
     uint64_t rankAttack(uint64_t occupancy, Position pos);
     FRIEND_TEST(boardTest, fileAttack);
@@ -65,21 +83,15 @@ private:
     //
     // DATA - currentColor, pieces on the board
     //
-    Color color;
-    uint64_t m_boards[NUMBER_OF_PIECES];
-
     FRIEND_TEST(boardTest, castlingFEN);
     FRIEND_TEST(moveTest, castling1);
     FRIEND_TEST(moveTest, castling2);
     FRIEND_TEST(moveTest, castling3);
     FRIEND_TEST(moveTest, castling4);
-    // king and queen sides are enabled by default
-    unsigned short castling = CASTLING_BLACK_KINGSIDE | CASTLING_BLACK_QUEENSIDE | CASTLING_WHITE_KINGSIDE | CASTLING_WHITE_QUEENSIDE;
 
     FRIEND_TEST(boardTest, entpassant);
-    // enpassant position
-    Position enpassant = NUMBER_OF_SQUARES;
-    Piece captured = NUMBER_OF_PIECES;
+
+    BoardState _stack[MAX_BOARD_MOVEMENTS], *state = &_stack[0];
     //
     // CONST DATA - does not change within a party
     //

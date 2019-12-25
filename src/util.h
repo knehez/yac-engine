@@ -3,6 +3,8 @@
 #include <stdint.h>
 #include <string>
 
+#define MAX_BOARD_MOVEMENTS 1024
+
 const uint64_t notAFile = 0X7F7F7F7F7F7F7F7F;
 const uint64_t notHFile = 0XFEFEFEFEFEFEFEFE;
 const uint64_t notABFile = 0X3f3f3f3f3f3f3f3f;

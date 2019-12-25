@@ -411,10 +411,10 @@ TEST(boardTest, castlingFEN)
     ChessBoard board;
     board.setFENCode("rnbqkbnr/ppp1pppp/8/3p4/3P4/8/PPP1PPPP/RNBQKBNR w KQkq - 0 1");
 
-    EXPECT_EQ(board.castling & CASTLING_BLACK_KINGSIDE, CASTLING_BLACK_KINGSIDE);
-    EXPECT_EQ(board.castling & CASTLING_BLACK_QUEENSIDE, CASTLING_BLACK_QUEENSIDE);
-    EXPECT_EQ(board.castling & CASTLING_WHITE_KINGSIDE, CASTLING_WHITE_KINGSIDE);
-    EXPECT_EQ(board.castling & CASTLING_WHITE_QUEENSIDE, CASTLING_WHITE_QUEENSIDE);   
+    EXPECT_EQ(board.state->castling & CASTLING_BLACK_KINGSIDE, CASTLING_BLACK_KINGSIDE);
+    EXPECT_EQ(board.state->castling & CASTLING_BLACK_QUEENSIDE, CASTLING_BLACK_QUEENSIDE);
+    EXPECT_EQ(board.state->castling & CASTLING_WHITE_KINGSIDE, CASTLING_WHITE_KINGSIDE);
+    EXPECT_EQ(board.state->castling & CASTLING_WHITE_QUEENSIDE, CASTLING_WHITE_QUEENSIDE);   
 }
 
 TEST(boardTest, entpassant)
@@ -422,5 +422,5 @@ TEST(boardTest, entpassant)
     ChessBoard board;
     board.setFENCode("r1bqkbnr/ppppp1p1/2n2p2/7p/3PPP2/8/PPP3PP/RNBQKBNR w KQkq h6 0 4");
 
-    EXPECT_EQ(board.enpassant, h6);
+    EXPECT_EQ(board.state->enpassant, h6);
 }

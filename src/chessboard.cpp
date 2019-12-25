@@ -1,7 +1,11 @@
 #include "chessboard.h"
+#include <iostream>
+#include <fstream>
 
 ChessBoard::ChessBoard()
 {
+    // debugging rsult file
+    fenFile.open("fenResult.txt");
     clear();
 
     for (int x = a1; x < NUMBER_OF_SQUARES; x++)
@@ -78,7 +82,7 @@ ChessBoard::ChessBoard()
         }
     }
 
-    color = WHITE;
+    state->color = WHITE;
 }
 
 Position ChessBoard::nextSquare(uint64_t *board)
@@ -96,18 +100,18 @@ void ChessBoard::clear()
 {
     for (int i = 0; i < NUMBER_OF_PIECES; i++)
     {
-        m_boards[i] = 0;
+        state->boards[i] = 0;
     }
 }
 
 uint64_t ChessBoard::getWhitePiecesBoard()
 {
-    return m_boards[P] | m_boards[R] | m_boards[N] | m_boards[B] | m_boards[Q] | m_boards[K];
+    return state->boards[P] | state->boards[R] | state->boards[N] | state->boards[B] | state->boards[Q] | state->boards[K];
 }
 
 uint64_t ChessBoard::getBlackPiecesBoard()
 {
-    return m_boards[p] | m_boards[r] | m_boards[n] | m_boards[b] | m_boards[q] | m_boards[k];
+    return state->boards[p] | state->boards[r] | state->boards[n] | state->boards[b] | state->boards[q] | state->boards[k];
 }
 
 void ChessBoard::setPiece(int pos, char piece)
@@ -116,7 +120,7 @@ void ChessBoard::setPiece(int pos, char piece)
     {
         if (piece == piecesChars[i])
         {
-            m_boards[i] |= 1LLU << pos;
+            state->boards[i] |= 1LLU << pos;
             break;
         }
     }
@@ -160,7 +164,7 @@ uint64_t ChessBoard::getBoard(char piece)
     {
         if (piece == piecesChars[i])
         {
-            return m_boards[i];
+            return state->boards[i];
         }
     }
     return 0LLU;
@@ -177,7 +181,7 @@ std::string ChessBoard::getFENCode()
         auto found{false};
         for (int j = 0; j < NUMBER_OF_PIECES; j++)
         {
-            if (m_boards[j] & (1LLU << boardPos))
+            if (state->boards[j] & (1LLU << boardPos))
             {
                 if (emptyCounter != 0)
                 {
@@ -229,7 +233,7 @@ void ChessBoard::setFENCode(const char *fenCode)
                 for (int j = 0; j < NUMBER_OF_PIECES; j++)
                 {
                     // set empty position of all the boards
-                    m_boards[j] &= ~(1LLU << boardPos);
+                    state->boards[j] &= ~(1LLU << boardPos);
                 }
                 boardPos++;
             }
@@ -239,7 +243,7 @@ void ChessBoard::setFENCode(const char *fenCode)
         {
             if (*fenCode == piecesChars[i])
             {
-                m_boards[i] |= (1LLU << boardPos);
+                state->boards[i] |= (1LLU << boardPos);
                 break;
             }
         }
@@ -259,28 +263,28 @@ void ChessBoard::setFENCode(const char *fenCode)
     } while (*(++fenCode));
 
     // w or b after the first space
-    *(fenCode++) == 'w' ? color = WHITE : color = BLACK;
+    *(fenCode++) == 'w' ? state->color = WHITE : state->color = BLACK;
 
     // step out next space
     fenCode++;
 
-    castling = 0;
+    state->castling = 0;
 
     do
     {
         switch (*fenCode)
         {
         case 'K':
-            castling |= CASTLING_WHITE_KINGSIDE;
+            state->castling |= CASTLING_WHITE_KINGSIDE;
             break;
         case 'Q':
-            castling |= CASTLING_WHITE_QUEENSIDE;
+            state->castling |= CASTLING_WHITE_QUEENSIDE;
             break;
         case 'k':
-            castling |= CASTLING_BLACK_KINGSIDE;
+            state->castling |= CASTLING_BLACK_KINGSIDE;
             break;
         case 'q':
-            castling |= CASTLING_BLACK_QUEENSIDE;
+            state->castling |= CASTLING_BLACK_QUEENSIDE;
             break;
         case '-':
             break;
@@ -303,7 +307,7 @@ void ChessBoard::setFENCode(const char *fenCode)
         int file = *(fenCode++) - 'a';
         int rank = *(fenCode++) - '1';
         int pos = rank * 8 + file;
-        enpassant = (Position)pos;
+        state->enpassant = (Position)pos;
     }
 }
 
@@ -311,7 +315,7 @@ Piece ChessBoard::getPieceAt(Position pos)
 {
     for (int j = 0; j < NUMBER_OF_PIECES; j++)
     {
-        if (m_boards[j] & (1LLU << pos))
+        if (state->boards[j] & (1LLU << pos))
         {
             return (Piece)j;
         }
@@ -321,18 +325,88 @@ Piece ChessBoard::getPieceAt(Position pos)
 
 void ChessBoard::move(Move move)
 {
-    auto &movingBoard = m_boards[getPieceAt(move.start)];
+    // init a new state
+    BoardState *nextState = state + 1;
+
+    memcpy(nextState->boards, state->boards, sizeof(uint64_t) * NUMBER_OF_PIECES);
+
+    nextState->color = state->color;
+    nextState->castling = state->castling;
+    nextState->enpassant = NUMBER_OF_SQUARES;
+    state++;
+
+    auto movingPiece = getPieceAt(move.start);
+    auto &movingBoard = state->boards[movingPiece];
+
+    // remove castling posibility if king or rook moved
+    if (state->castling & CASTLING_WHITE_KINGSIDE)
+    {
+        if (movingPiece == R && move.start == h1)
+        {
+            state->castling &= ~CASTLING_WHITE_KINGSIDE;
+        }
+        else if (movingPiece == K && abs(move.start - move.end) != 2)
+        {
+            state->castling &= ~CASTLING_WHITE_KINGSIDE;
+        }
+    }
+    if (state->castling & CASTLING_WHITE_QUEENSIDE)
+    {
+        if (movingPiece == R && move.start == a1)
+        {
+            state->castling &= ~CASTLING_WHITE_QUEENSIDE;
+        }
+        else if (movingPiece == K && abs(move.start - move.end) != 2)
+        {
+            state->castling &= ~CASTLING_WHITE_QUEENSIDE;
+        }
+    }
+    if (state->castling & CASTLING_BLACK_KINGSIDE)
+    {
+        if (movingPiece == r && move.start == h8)
+        {
+            state->castling &= ~CASTLING_BLACK_KINGSIDE;
+        }
+        else if (movingPiece == k && abs(move.start - move.end) != 2)
+        {
+            state->castling &= ~CASTLING_BLACK_KINGSIDE;
+        }
+    }
+    if (state->castling & CASTLING_BLACK_QUEENSIDE)
+    {
+        if (movingPiece == r && move.start == a8)
+        {
+            state->castling &= ~CASTLING_BLACK_QUEENSIDE;
+        }
+        else if (movingPiece == k && abs(move.start - move.end) != 2)
+        {
+            state->castling &= ~CASTLING_BLACK_QUEENSIDE;
+        }
+    }
+    // set enpassant flag if a pawn moves 2 squares
+    if (movingPiece == P && move.end - move.start == 16)
+    {
+        state->enpassant = (Position)(move.start + 8);
+    }
+    else if (movingPiece == p && move.start - move.end == 16)
+    {
+        state->enpassant = (Position)(move.start - 8);
+    }
+    else
+    {
+        state->enpassant = NUMBER_OF_SQUARES;
+    }
 
     if (move.captured != NUMBER_OF_PIECES)
     {
-        auto &capturedBoard = m_boards[move.captured];
+        auto &capturedBoard = state->boards[move.captured];
         if (move.enpassant != NUMBER_OF_SQUARES)
         {
             // remove enpassant piece
-            auto hitPosition = (color == BLACK) ? enpassant + 8 : enpassant - 8;
+            auto hitPosition = (state->color == BLACK) ? move.enpassant + 8 : move.enpassant - 8;
             capturedBoard &= ~(1LLU << (Position)hitPosition);
             // switch off enpassant
-            enpassant = NUMBER_OF_SQUARES;
+            state->enpassant = NUMBER_OF_SQUARES;
         }
         else
         { // normal hit
@@ -340,9 +414,56 @@ void ChessBoard::move(Move move)
             capturedBoard &= ~(1LLU << move.end);
         }
     }
-
-    // move piece
-    movingBoard &= ~(1LLU << move.start);
+    // CASTLING
+    //
+    // - detect castling (4 types)
+    // - move rock in castling
+    //
+    if (state->castling != 0)
+    {
+        if (movingPiece == R && move.start == h1)
+        {
+            state->castling &= ~(CASTLING_WHITE_KINGSIDE);
+        }
+        if (movingPiece == R && move.start == a1)
+        {
+            state->castling &= ~(CASTLING_WHITE_QUEENSIDE);
+        }
+        if (movingPiece == r && move.start == h8)
+        {
+            state->castling &= ~(CASTLING_BLACK_KINGSIDE);
+        }
+        if (movingPiece == r && move.start == a8)
+        {
+            state->castling &= ~(CASTLING_BLACK_QUEENSIDE);
+        }
+        if (move.start == e1 && move.end == g1 && movingPiece == K)
+        {
+            state->boards[R] &= ~(1LLU << h1);
+            state->boards[R] |= (1LLU << f1);
+            state->castling &= ~(CASTLING_WHITE_KINGSIDE | CASTLING_WHITE_QUEENSIDE);
+        }
+        else if (move.start == e1 && move.end == c1 && movingPiece == K)
+        {
+            state->boards[R] &= ~(1LLU << a1);
+            state->boards[R] |= (1LLU << d1);
+            state->castling &= ~(CASTLING_WHITE_KINGSIDE | CASTLING_WHITE_QUEENSIDE);
+        }
+        else if (move.start == e8 && move.end == g8 && movingPiece == k)
+        {
+            state->boards[r] &= ~(1LLU << h8);
+            state->boards[r] |= (1LLU << f8);
+            state->castling &= ~(CASTLING_BLACK_KINGSIDE | CASTLING_BLACK_QUEENSIDE);
+        }
+        else if (move.start == e8 && move.end == c8 && movingPiece == k)
+        {
+            state->boards[r] &= ~(1LLU << a8);
+            state->boards[r] |= (1LLU << d8);
+            state->castling &= ~(CASTLING_BLACK_KINGSIDE | CASTLING_BLACK_QUEENSIDE);
+        }
+    }
+    // move a general piece
+    movingBoard ^= (1LLU << move.start);
 
     if (move.promotion == NUMBER_OF_PIECES)
     {
@@ -351,59 +472,26 @@ void ChessBoard::move(Move move)
     }
     else
     {
-        auto &promotionBoard = m_boards[move.promotion];
+        auto &promotionBoard = state->boards[move.promotion];
         promotionBoard |= 1LLU << move.end;
     }
 
-    color = oppositeColor(color);
+    state->color = oppositeColor(state->color);
 }
 
 void ChessBoard::undoMove(Move move)
 {
-    auto movingBoard = &m_boards[getPieceAt(move.end)];
-    // if there is a promotion then clear the promoted piece
-    if (move.promotion != NUMBER_OF_PIECES)
-    {
-        // delete promoted piece
-        m_boards[move.promotion] &= ~(1LLU << move.end);
-        Piece bb = (Piece)(P + oppositeColor(color));
-        movingBoard = &m_boards[bb];
-    }
-    if (move.captured != NUMBER_OF_PIECES)
-    {
-        auto &capturedBoard = m_boards[move.captured];
-        if (move.enpassant != NUMBER_OF_SQUARES)
-        {
-            // remove enpassant piece
-            auto hitPosition = (color == WHITE) ? move.enpassant + 8 : move.enpassant - 8;
-            capturedBoard |= 1LLU << (Position)hitPosition;
-            // switch off enpassant
-            enpassant = move.enpassant;
-        }
-        else
-        {
-            // put back captured piece
-            capturedBoard |= 1LLU << move.end;
-        }
-    }
-    // move back moving piece
-    *movingBoard &= ~(1LLU << move.end);
-    *movingBoard |= (1LLU << move.start);
-    if (move.enpassant != NUMBER_OF_SQUARES)
-    {
-        enpassant = NUMBER_OF_SQUARES;
-    }
-    color = oppositeColor(color);
+    state--;
 }
 
 bool ChessBoard::isMate()
 {
     Moves m;
     auto moves = generateMoves(m);
-    auto kingPosition = (color == WHITE) ? getPiecePos(K) : getPiecePos(k);
-    auto oppositeColor = (color == WHITE) ? BLACK : WHITE;
+    auto kingPosition = (state->color == WHITE) ? getPiecePos(K) : getPiecePos(k);
+    auto oppositeColor = (state->color == WHITE) ? BLACK : WHITE;
     // mate: no moves and king is in check
-    if (moves.length == 0 && isSqareAttacked(kingPosition, &m_boards[0], oppositeColor) == true)
+    if (moves.length == 0 && isSqareAttacked(kingPosition, &state->boards[0], oppositeColor) == true)
     {
         return true;
     }
@@ -417,9 +505,9 @@ bool ChessBoard::isStaleMate()
 {
     Moves m;
     auto moves = generateMoves(m);
-    auto kingPosition = (color == WHITE) ? getPiecePos(K) : getPiecePos(k);
+    auto kingPosition = (state->color == WHITE) ? getPiecePos(K) : getPiecePos(k);
     // stale mate: no moves and king is not is check
-    if (moves.length == 0 && isSqareAttacked(kingPosition, &m_boards[0], color) == false)
+    if (moves.length == 0 && isSqareAttacked(kingPosition, &state->boards[0], state->color) == false)
     {
         return true;
     }
@@ -429,11 +517,67 @@ bool ChessBoard::isStaleMate()
     }
 }
 
+std::string too_string(Moves moves)
+{
+    std::string strMove;
+    for (int i = 0; i < moves.length; i++)
+    {
+        strMove += algebraicFile(moves.move[i].start);
+        strMove += algebraicRank(moves.move[i].start);
+        strMove += algebraicFile(moves.move[i].end);
+        strMove += algebraicRank(moves.move[i].end);
+        if (moves.move[i].promotion != NUMBER_OF_PIECES)
+        {
+            strMove += "(";
+            strMove += piecesChars[moves.move[i].promotion];
+            strMove += ")";
+        }
+        strMove += "|";
+    }
+    return strMove;
+}
+
+std::string print_move(Move move)
+{
+    std::string strMove;
+    strMove += algebraicFile(move.start);
+    strMove += algebraicRank(move.start);
+    strMove += algebraicFile(move.end);
+    strMove += algebraicRank(move.end);
+    if (move.promotion != NUMBER_OF_PIECES)
+    {
+        strMove += tolower(piecesChars[move.promotion]);
+    }
+    return strMove;
+}
+
 uint64_t ChessBoard::perft(int depth)
 {
     uint64_t count = 0;
     Moves moves;
 
+    moves = generateMoves(moves);
+    if (depth == 1)
+    {
+        /*for (int i = 0; i < moves.length; i++)
+        {
+            for (auto m : matchMoves)
+            {
+                fenFile << print_move(m) << '|';
+            }
+            fenFile << print_move(moves.move[i]) << "\n";
+        }*/
+
+        return moves.length;
+    }
+    for (int i = 0; i < moves.length; i++)
+    {
+        move(moves.move[i]);
+        //matchMoves.push_back(moves.move[i]);
+        count += perft(depth - 1);
+        //matchMoves.pop_back();
+        undoMove(moves.move[i]);
+    }
     return count;
 }
 
@@ -442,7 +586,9 @@ Moves ChessBoard::generateMoves(Moves moves)
     auto startMove = &moves.move[0];
     auto currentMove = startMove;
     uint64_t board;
-    color == WHITE ? board = getWhitePiecesBoard() : board = getBlackPiecesBoard();
+    state->color == WHITE ? board = getWhitePiecesBoard() : board = getBlackPiecesBoard();
+
+    uint64_t tempBoard[NUMBER_OF_PIECES];
 
     while (board)
     {
@@ -450,77 +596,103 @@ Moves ChessBoard::generateMoves(Moves moves)
 
         auto tmpBoard = allPieceMoves(actualPiecePos);
 
-        auto nextPromotion = (int)R;
-
         if (tmpBoard != 0)
         {
             int endPos;
             while ((endPos = nextSquare(&tmpBoard)) < NUMBER_OF_SQUARES)
             {
+                Piece movingPiece = getPieceAt((Position)actualPiecePos);
                 currentMove->start = (Position)actualPiecePos;
                 currentMove->end = (Position)endPos;
-                Piece piece = getPieceAt((Position)actualPiecePos);
                 currentMove->captured = getPieceAt((Position)endPos);
+
                 auto piecerank = rank(currentMove->end);
-                // white pawn on the rank H - black pawn on the rank A?
-                if ((piecerank == 7 && piece == P) | (piecerank == 0 && piece == p))
-                {
-                    currentMove->promotion = (Piece)(nextPromotion + color);
-                    nextPromotion += 2;
-                }
+                
+                memcpy(&tempBoard, &state->boards[0], sizeof(uint64_t) * NUMBER_OF_PIECES);
+
                 // this move is an enpassant move?
-                if ((piece == P || piece == p) && currentMove->end == enpassant)
+                if ((movingPiece == P || movingPiece == p) && currentMove->end == state->enpassant)
                 {
-                    currentMove->enpassant = enpassant;
-                    auto hitPosition = (color == BLACK) ? enpassant + 8 : enpassant - 8;
+                    currentMove->enpassant = state->enpassant;
+                    auto hitPosition = (state->color == BLACK) ? state->enpassant + 8 : state->enpassant - 8;
                     currentMove->captured = getPieceAt((Position)hitPosition);
+                    auto &capturedBoard = state->boards[currentMove->captured];
+                    capturedBoard &= ~(1LLU << hitPosition);
                 }
-                move(*currentMove);
-                auto oppositeKingPos = color == BLACK ? getPiecePos(K) : getPiecePos(k);
+
+                // do move
+                auto &movingBoard = state->boards[movingPiece];
+
+                if (currentMove->captured != NUMBER_OF_PIECES)
+                {
+                    auto &capturedBoard = state->boards[currentMove->captured];
+                    // normal capture - remove captured piece
+                    capturedBoard &= ~(1LLU << currentMove->end);
+                }
+                // move a general piece
+                movingBoard ^= (1LLU << currentMove->start);
+                movingBoard |= 1LLU << currentMove->end;
+
+                auto oppositeKingPos = state->color == WHITE ? getPiecePos(K) : getPiecePos(k);
 
                 // is in check?
-                if (!isSqareAttacked(oppositeKingPos, &m_boards[0], color))
+                if (!isSqareAttacked(oppositeKingPos, &state->boards[0], oppositeColor(state->color)))
                 {
-                    // is there a promotion?
-                    if (currentMove->promotion != NUMBER_OF_PIECES)
+                    // Promotion?
+                    // white pawn on the rank H - black pawn on the rank A?
+                    if ((piecerank == 7 && movingPiece == P) |
+                        (piecerank == 0 && movingPiece == p))
                     {
-                        if (nextPromotion > Q)
-                        {
-                            // no more promotion, do not put back pawn
-                            // set nextPromotion to 0 (Rook).
-                            nextPromotion = (int)R;
-                        }
-                        else
-                        {
-                            // put back Pawn for the next promotion
-                            tmpBoard |= (1LLU << currentMove->end);
-                        }
+                        Piece captured = currentMove->captured;
+                        // generate all the 4 possible promotions
+                        currentMove->promotion = (Piece)(R + state->color);
+                        currentMove->captured = captured;
+                        currentMove->enpassant = NUMBER_OF_SQUARES;
+                        currentMove++;
+                        currentMove->start = (Position)actualPiecePos;
+                        currentMove->end = (Position)endPos;
+                        currentMove->promotion = (Piece)(N + state->color);
+                        currentMove->captured = captured;
+                        currentMove->enpassant = NUMBER_OF_SQUARES;
+                        currentMove++;
+                        currentMove->start = (Position)actualPiecePos;
+                        currentMove->end = (Position)endPos;
+                        currentMove->promotion = (Piece)(B + state->color);
+                        currentMove->captured = captured;
+                        currentMove->enpassant = NUMBER_OF_SQUARES;
+                        currentMove++;
+                        currentMove->start = (Position)actualPiecePos;
+                        currentMove->end = (Position)endPos;
+                        currentMove->promotion = (Piece)(Q + state->color);
+                        currentMove->captured = captured;
+                        currentMove->enpassant = NUMBER_OF_SQUARES;
                     }
-                    undoMove(*currentMove);
                     // save currentmove
                     currentMove++;
                 }
                 else
                 {
-                    undoMove(*currentMove);
+                    perftChecks++;
                 }
-                // undo move
+                // restore board
+                memcpy(&state->boards[0], &tempBoard, sizeof(uint64_t) * NUMBER_OF_PIECES);
             }
         }
     }
     // casting is possible?
-    color == WHITE ? board = getWhitePiecesBoard() : board = getBlackPiecesBoard();
+    state->color == WHITE ? board = getWhitePiecesBoard() : board = getBlackPiecesBoard();
 
-    if (castling != 0 && color == WHITE && !isSqareAttacked(getPiecePos(K), &m_boards[0], oppositeColor(color)))
+    if (state->castling != 0 && state->color == WHITE && !isSqareAttacked(getPiecePos(K), &state->boards[0], oppositeColor(state->color)))
     {
-        if (castling & CASTLING_WHITE_KINGSIDE)
+        if (state->castling & CASTLING_WHITE_KINGSIDE)
         {
             // king on e1, rook on h1 and f1 and g1 empty
             // king on f1, g1 not in check
             if (getPiecePos(K) == e1 && getPieceAt(h1) == R &&
                 getPieceAt(f1) == NUMBER_OF_PIECES && getPieceAt(g1) == NUMBER_OF_PIECES &&
-                !isSqareAttacked(f1, &m_boards[0], oppositeColor(color)) &&
-                !isSqareAttacked(g1, &m_boards[0], oppositeColor(color)))
+                !isSqareAttacked(e1, &state->boards[0], oppositeColor(state->color)) &&
+                !isSqareAttacked(f1, &state->boards[0], oppositeColor(state->color)) &&
+                !isSqareAttacked(g1, &state->boards[0], oppositeColor(state->color)))
             {
                 currentMove->start = e1;
                 currentMove->end = g1;
@@ -528,17 +700,17 @@ Moves ChessBoard::generateMoves(Moves moves)
                 currentMove->captured = NUMBER_OF_PIECES;
                 currentMove->enpassant = NUMBER_OF_SQUARES;
                 currentMove++;
-                castling &= ~(CASTLING_WHITE_KINGSIDE | CASTLING_WHITE_QUEENSIDE);
             }
         }
-        if (castling & CASTLING_WHITE_QUEENSIDE)
+        if (state->castling & CASTLING_WHITE_QUEENSIDE)
         {
             // king on e1, rook on a1, b1 c1 d1 empty
             // king on e1, d1, c1 not in check
             if (getPiecePos(K) == e1 && getPieceAt(a1) == R &&
                 getPieceAt(b1) == NUMBER_OF_PIECES && getPieceAt(c1) == NUMBER_OF_PIECES && getPieceAt(d1) == NUMBER_OF_PIECES &&
-                !isSqareAttacked(d1, &m_boards[0], oppositeColor(color)) &&
-                !isSqareAttacked(c1, &m_boards[0], oppositeColor(color)))
+                !isSqareAttacked(e1, &state->boards[0], oppositeColor(state->color)) &&
+                !isSqareAttacked(d1, &state->boards[0], oppositeColor(state->color)) &&
+                !isSqareAttacked(c1, &state->boards[0], oppositeColor(state->color)))
             {
                 currentMove->start = e1;
                 currentMove->end = c1;
@@ -546,21 +718,21 @@ Moves ChessBoard::generateMoves(Moves moves)
                 currentMove->captured = NUMBER_OF_PIECES;
                 currentMove->enpassant = NUMBER_OF_SQUARES;
                 currentMove++;
-                castling &= ~(CASTLING_WHITE_KINGSIDE | CASTLING_WHITE_QUEENSIDE);
             }
         }
     }
 
-    if (castling != 0 && color == BLACK && !isSqareAttacked(getPiecePos(k), &m_boards[0], oppositeColor(color)))
+    if (state->castling != 0 && state->color == BLACK && !isSqareAttacked(getPiecePos(k), &state->boards[0], oppositeColor(state->color)))
     {
-        if (castling & CASTLING_BLACK_KINGSIDE)
+        if (state->castling & CASTLING_BLACK_KINGSIDE)
         {
             // king on e8, rook on h8 and f8 and g8 are empty
             // king on f8, g8 not in check
             if (getPiecePos(k) == e8 && getPieceAt(h8) == r &&
                 getPieceAt(f8) == NUMBER_OF_PIECES && getPieceAt(g8) == NUMBER_OF_PIECES &&
-                !isSqareAttacked(f8, &m_boards[0], oppositeColor(color)) &&
-                !isSqareAttacked(g8, &m_boards[0], oppositeColor(color)))
+                !isSqareAttacked(e8, &state->boards[0], oppositeColor(state->color)) &&
+                !isSqareAttacked(f8, &state->boards[0], oppositeColor(state->color)) &&
+                !isSqareAttacked(g8, &state->boards[0], oppositeColor(state->color)))
             {
                 currentMove->start = e8;
                 currentMove->end = g8;
@@ -568,17 +740,17 @@ Moves ChessBoard::generateMoves(Moves moves)
                 currentMove->captured = NUMBER_OF_PIECES;
                 currentMove->enpassant = NUMBER_OF_SQUARES;
                 currentMove++;
-                castling &= ~(CASTLING_BLACK_KINGSIDE | CASTLING_BLACK_QUEENSIDE);
             }
         }
-        if (castling & CASTLING_BLACK_QUEENSIDE)
+        if (state->castling & CASTLING_BLACK_QUEENSIDE)
         {
             // king on e8, rook on a8, b8 c8 d8 are empty
             // king on e1, d1, c1 not in check
             if (getPiecePos(k) == e8 && getPieceAt(a8) == r &&
                 getPieceAt(b8) == NUMBER_OF_PIECES && getPieceAt(c8) == NUMBER_OF_PIECES && getPieceAt(d8) == NUMBER_OF_PIECES &&
-                !isSqareAttacked(d8, &m_boards[0], oppositeColor(color)) &&
-                !isSqareAttacked(c8, &m_boards[0], oppositeColor(color)))
+                !isSqareAttacked(e8, &state->boards[0], oppositeColor(state->color)) &&
+                !isSqareAttacked(d8, &state->boards[0], oppositeColor(state->color)) &&
+                !isSqareAttacked(c8, &state->boards[0], oppositeColor(state->color)))
             {
                 currentMove->start = e8;
                 currentMove->end = c8;
@@ -586,7 +758,6 @@ Moves ChessBoard::generateMoves(Moves moves)
                 currentMove->captured = NUMBER_OF_PIECES;
                 currentMove->enpassant = NUMBER_OF_SQUARES;
                 currentMove++;
-                castling &= ~(CASTLING_BLACK_KINGSIDE | CASTLING_BLACK_QUEENSIDE);
             }
         }
     }
@@ -613,7 +784,7 @@ bool ChessBoard::isSqareAttacked(Position square, uint64_t *board, Color opposit
 Position ChessBoard::getPiecePos(Piece piece)
 {
     // select board
-    auto board = m_boards[piece];
+    auto board = state->boards[piece];
     // determinate the first bit
     auto index = bitScan64(board);
     return (Position)index;
@@ -623,7 +794,7 @@ uint64_t ChessBoard::allPieceMoves(Position pos)
 {
     Piece piece = getPieceAt((Position)pos);
 
-    auto notOwnPieces = (color == WHITE ? ~getWhitePiecesBoard() : ~getBlackPiecesBoard());
+    auto notOwnPieces = (state->color == WHITE ? ~getWhitePiecesBoard() : ~getBlackPiecesBoard());
     uint64_t oppositePieces;
     Position oppositeKingPos;
 
@@ -637,13 +808,13 @@ uint64_t ChessBoard::allPieceMoves(Position pos)
         return bishopMoves(pos) & notOwnPieces;
     case K:
     case k:
-        oppositeKingPos = color == BLACK ? getPiecePos(K) : getPiecePos(k);
+        oppositeKingPos = state->color == BLACK ? getPiecePos(K) : getPiecePos(k);
         return (kingMoves(pos) & ~kingMoves(oppositeKingPos)) & notOwnPieces;
     case P:
-        oppositePieces = color == BLACK ? getWhitePiecesBoard() : getBlackPiecesBoard();
+        oppositePieces = state->color == BLACK ? getWhitePiecesBoard() : getBlackPiecesBoard();
         return pawnWhiteMoves(pos) | (pawnWhiteHitMoves(pos) & oppositePieces);
     case p:
-        oppositePieces = color == BLACK ? getWhitePiecesBoard() : getBlackPiecesBoard();
+        oppositePieces = state->color == BLACK ? getWhitePiecesBoard() : getBlackPiecesBoard();
         return pawnBlackMoves(pos) | (pawnBlackHitMoves(pos) & oppositePieces);
     case R:
     case r:
@@ -702,12 +873,12 @@ uint64_t ChessBoard::pawnBlackMoves(Position pos)
     // if it is on the second row (0xff00000000)
     if (ret)
     {
-        ret |= SOUTH_TWO(tmp) & 0xff00000000;
+        ret |= SOUTH_TWO(tmp) & 0xff00000000 & ~(getWhitePiecesBoard() | getBlackPiecesBoard());
     }
     // enpassant
-    if (enpassant != NUMBER_OF_SQUARES)
+    if (state->enpassant != NUMBER_OF_SQUARES)
     {
-        uint64_t entP = 1LLU << enpassant;
+        uint64_t entP = 1LLU << state->enpassant;
         // move south if there is not any pieces in front of the pawn
         ret |= ((SOUTH_EAST(tmp) & notHFile) | (SOUTH_WEST(tmp) & notAFile)) & entP;
     }
@@ -726,7 +897,7 @@ uint64_t ChessBoard::pawnWhiteHitMoves(Position pos)
 {
     uint64_t tmp = 1LLU << pos;
     // move south if there is not any pieces in front of the pawn
-    uint64_t ret = ((NORTH_EAST(tmp) & notAFile) | (NORTH_WEST(tmp) & notHFile));
+    uint64_t ret = ((NORTH_EAST(tmp) & notHFile) | (NORTH_WEST(tmp) & notAFile));
     return ret;
 }
 
@@ -740,14 +911,14 @@ uint64_t ChessBoard::pawnWhiteMoves(Position pos)
     // if it is on the second row (0xff000000)
     if (ret)
     {
-        ret |= NORTH_TWO(tmp) & 0xff000000;
+        ret |= NORTH_TWO(tmp) & 0xff000000 & ~(getWhitePiecesBoard() | getBlackPiecesBoard());
     }
     // enpassant
-    if (enpassant != NUMBER_OF_SQUARES)
+    if (state->enpassant != NUMBER_OF_SQUARES)
     {
-        uint64_t entP = 1LLU << enpassant;
+        uint64_t entP = 1LLU << state->enpassant;
         // move north if there is not any pieces in front of the pawn
-        ret |= ((NORTH_EAST(tmp) & notAFile) | (NORTH_WEST(tmp) & notHFile)) & entP;
+        ret |= ((NORTH_EAST(tmp) & notHFile) | (NORTH_WEST(tmp) & notAFile)) & entP;
     }
     return ret;
 }
@@ -809,7 +980,7 @@ std::string ChessBoard::to_string(int startPos, int endPos)
         bool found = false;
         for (int j = 0; j < NUMBER_OF_PIECES; j++)
         {
-            if (m_boards[j] & (1LLU << boardPos))
+            if (state->boards[j] & (1LLU << boardPos))
             {
                 out += piecesChars[j];
                 // do not find an other one if we already found one
