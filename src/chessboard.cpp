@@ -325,6 +325,27 @@ Piece ChessBoard::getPieceAt(Position pos)
     return NUMBER_OF_PIECES;
 }
 
+bool ChessBoard::validateMove(Move *userMove)
+{
+    Moves moves;
+    moves = generateMoves(moves);
+
+    if (getPieceAt(userMove->end) != NUMBER_OF_PIECES)
+    {
+        userMove->captured = getPieceAt(userMove->end);
+    }
+
+    for (int i = 0; i < moves.length; i++)
+    {
+        Move m = moves.move[i];
+        if (m.start == userMove->start && m.end == userMove->end)
+        {
+            return true;
+        }
+    }
+    return false;
+}
+
 void ChessBoard::move(Move move)
 {
     // init a new state
@@ -539,7 +560,7 @@ std::string too_string(Moves moves)
     return strMove;
 }
 
-std::string print_move(Move move)
+std::string ChessBoard::print_move(Move move)
 {
     std::string strMove;
     strMove += algebraicFile(move.start);
@@ -551,6 +572,48 @@ std::string print_move(Move move)
         strMove += tolower(piecesChars[move.promotion]);
     }
     return strMove;
+}
+
+Color ChessBoard::getColor()
+{
+    return state->color;
+}
+
+uint64_t ChessBoard::monteCarloSimulation(int depth, bool &isMateFound, int &value)
+{
+    uint64_t count = 0;
+    Moves moves;
+
+    moves = generateMoves(moves);
+
+    // no moves then mate (or stalemate)
+    if (moves.length == 0)
+    {
+        isMateFound = true;
+        std::cout << "\n"
+                  << getFENCode() << "\n";
+        std::cout << (getColor() == WHITE ? "WHITE" : "BLACK") << "\n";
+        value = getColor() == WHITE ? 1 : -1;
+        return 1;
+    }
+    int randomIndex = rand() % moves.length;
+
+    if (depth == 1)
+    {
+        return 1;
+    }
+    move(moves.move[randomIndex]);
+
+    count += monteCarloSimulation(depth - 1, isMateFound, value);
+
+    undoMove(moves.move[randomIndex]);
+
+    if (isMateFound)
+    {
+        std::cout << print_move(moves.move[randomIndex]) << " ";
+    }
+
+    return count;
 }
 
 uint64_t ChessBoard::perft(int depth)

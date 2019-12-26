@@ -9,6 +9,7 @@
 #if __linux__
     #include <string.h>
 #endif
+#include <stdlib.h>
 
 struct BoardState
 {
@@ -27,11 +28,14 @@ public:
     std::vector<Move> matchMoves;
     void setFENCode(const char *fenstr);
     std::string getFENCode();
+    std::string print_move(Move move);
 
     uint64_t perft(int depth);
+    uint64_t monteCarloSimulation(int depth, bool &isMateFound, int &value);
 
     void move(Move);
     void undoMove(Move);
+    bool validateMove(Move*);
 
     void setPiece(int pos, char piece);
     Piece getPieceAt(Position pos);
@@ -46,6 +50,7 @@ public:
 
     bool isMate();
     bool isStaleMate();
+    Color getColor();
     void clear();
 
     std::string to_string(int startPos = a1, int endPos = h8);
