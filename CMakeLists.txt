@@ -3,6 +3,8 @@ project(yace VERSION 1.0
              DESCRIPTION "Yet Another Chess Engine"
              LANGUAGES CXX)
 
+find_package (Threads)
+
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_COMPILE_FEATURES EHsc)
 
