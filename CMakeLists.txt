@@ -7,6 +7,7 @@ find_package (Threads)
 
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_COMPILE_FEATURES EHsc)
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pthread")
 
 option(COVERALLS "Turn on coveralls support" OFF)
 option(COVERALLS_UPLOAD "Upload the generated coveralls json" ON)
