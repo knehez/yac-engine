@@ -7,7 +7,7 @@
 #include <iostream>
 #include <fstream>
 #if __linux__
-    #include <string.h>
+#include <string.h>
 #endif
 #include <stdlib.h>
 
@@ -15,7 +15,6 @@ struct BoardState
 {
     Color color = WHITE;
     uint64_t boards[NUMBER_OF_PIECES];
-    uint64_t occupied[NUMBER_OF_COLORS];
     uint16_t castling = CASTLING_BLACK_KINGSIDE | CASTLING_BLACK_QUEENSIDE | CASTLING_WHITE_KINGSIDE | CASTLING_WHITE_QUEENSIDE;
     Position enpassant = NUMBER_OF_SQUARES;
 };
@@ -24,18 +23,20 @@ class ChessBoard
 {
 public:
     ChessBoard();
+    void initialState();
+
     std::ofstream fenFile;
     std::vector<Move> matchMoves;
     void setFENCode(const char *fenstr);
     std::string getFENCode();
-    std::string print_move(Move move);
 
-    uint64_t perft(int depth);
-    uint64_t monteCarloSimulation(int depth, bool &isMateFound, int &value);
+    std::string to_string(Move move);
+    std::string to_string(Position pos);
+    std::string to_string(int startPos = a1, int endPos = h8);
 
     void move(Move);
     void undoMove(Move);
-    bool validateMove(Move*);
+    bool validateMove(Move *);
 
     void setPiece(int pos, char piece);
     Piece getPieceAt(Position pos);
@@ -52,8 +53,6 @@ public:
     bool isStaleMate();
     Color getColor();
     void clear();
-
-    std::string to_string(int startPos = a1, int endPos = h8);
     std::string showOneBitBoard(uint64_t board, int startPos = a1, int endPos = h8);
     //
     // misc - data

@@ -81,7 +81,11 @@ ChessBoard::ChessBoard()
             }
         }
     }
+    initialState();
+}
 
+void ChessBoard::initialState()
+{
     state->color = WHITE;
 }
 
@@ -214,6 +218,46 @@ std::string ChessBoard::getFENCode()
         }
         boardPos++;
     }
+
+    fen += ' ';
+    state->color == WHITE ? fen += 'w' : fen += 'b';
+
+    fen += ' ';
+    if (state->castling != 0)
+    {
+        if (state->castling & CASTLING_WHITE_KINGSIDE)
+        {
+            fen += 'K';
+        }
+        if (state->castling & CASTLING_WHITE_QUEENSIDE)
+        {
+            fen += 'Q';
+        }
+        if (state->castling & CASTLING_BLACK_KINGSIDE)
+        {
+            fen += 'k';
+        }
+        if (state->castling & CASTLING_BLACK_QUEENSIDE)
+        {
+            fen += 'q';
+        }
+    }
+    else
+    {
+        fen += '-';
+    }
+
+    fen += ' ';
+
+    if (state->enpassant != NUMBER_OF_SQUARES)
+    {
+        fen += to_string(state->enpassant);
+    }
+    else
+    {
+        fen += '-';
+    }
+    fen += " 0 1";
     return fen;
 }
 
@@ -304,13 +348,19 @@ void ChessBoard::setFENCode(const char *fenCode)
     }
     else
     {
+        if (!(*fenCode >= 'a' && *fenCode <= 'h'))
+        { // invalid FEN code
+            return;
+        }
         int file = *(fenCode++) - 'a';
+        if (!(*fenCode >= '1' && *fenCode <= '8'))
+        { // invalid FEN code
+            return;
+        }
         int rank = *(fenCode++) - '1';
         int pos = rank * 8 + file;
         state->enpassant = (Position)pos;
     }
-    state->occupied[WHITE] = getWhitePiecesBoard();
-    state->occupied[BLACK] = getBlackPiecesBoard();
 }
 
 Piece ChessBoard::getPieceAt(Position pos)
@@ -560,7 +610,15 @@ std::string too_string(Moves moves)
     return strMove;
 }
 
-std::string ChessBoard::print_move(Move move)
+std::string ChessBoard::to_string(Position pos)
+{
+    std::string strPos;
+    strPos += algebraicFile(pos);
+    strPos += algebraicRank(pos);
+    return strPos;
+}
+
+std::string ChessBoard::to_string(Move move)
 {
     std::string strMove;
     strMove += algebraicFile(move.start);
@@ -579,89 +637,23 @@ Color ChessBoard::getColor()
     return state->color;
 }
 
-uint64_t ChessBoard::monteCarloSimulation(int depth, bool &isMateFound, int &value)
-{
-    uint64_t count = 0;
-    Moves moves;
-
-    moves = generateMoves(moves);
-
-    // no moves then mate (or stalemate)
-    if (moves.length == 0)
-    {
-        isMateFound = true;
-        std::cout << "\n"
-                  << getFENCode() << "\n";
-        std::cout << (getColor() == WHITE ? "WHITE" : "BLACK") << "\n";
-        value = getColor() == WHITE ? 1 : -1;
-        return 1;
-    }
-    int randomIndex = rand() % moves.length;
-
-    if (depth == 1)
-    {
-        return 1;
-    }
-    move(moves.move[randomIndex]);
-
-    count += monteCarloSimulation(depth - 1, isMateFound, value);
-
-    undoMove(moves.move[randomIndex]);
-
-    if (isMateFound)
-    {
-        std::cout << print_move(moves.move[randomIndex]) << " ";
-    }
-
-    return count;
-}
-
-uint64_t ChessBoard::perft(int depth)
-{
-    uint64_t count = 0;
-    Moves moves;
-
-    moves = generateMoves(moves);
-    if (depth == 1)
-    {
-        /*for (int i = 0; i < moves.length; i++)
-        {
-            for (auto m : matchMoves)
-            {
-                fenFile << print_move(m) << '|';
-            }
-            fenFile << print_move(moves.move[i]) << "\n";
-        }*/
-
-        return moves.length;
-    }
-    for (int i = 0; i < moves.length; i++)
-    {
-        move(moves.move[i]);
-        //matchMoves.push_back(moves.move[i]);
-        count += perft(depth - 1);
-        //matchMoves.pop_back();
-        undoMove(moves.move[i]);
-    }
-    return count;
-}
-
 Moves ChessBoard::generateMoves(Moves moves)
 {
     auto startMove = &moves.move[0];
     auto currentMove = startMove;
     uint64_t board;
-    state->occupied[WHITE] = getWhitePiecesBoard();
-    state->occupied[BLACK] = getBlackPiecesBoard();
 
-    state->color == WHITE ? board = state->occupied[WHITE] : board = state->occupied[BLACK];
+    state->color == WHITE ? board = getWhitePiecesBoard() : board = getBlackPiecesBoard();
 
     uint64_t tempBoard[NUMBER_OF_PIECES];
 
     while (board)
     {
         auto actualPiecePos = nextSquare(&board);
-
+        if(actualPiecePos < 0 || actualPiecePos > NUMBER_OF_SQUARES)
+        {
+            std::cout << "illegal position";
+        }
         auto tmpBoard = allPieceMoves(actualPiecePos);
 
         if (tmpBoard != 0)
@@ -870,30 +862,30 @@ uint64_t ChessBoard::allPieceMoves(Position pos)
     {
     case N:
     case n:
-        notOwnPieces = (state->color == WHITE ? ~state->occupied[WHITE] : ~state->occupied[BLACK]);
+        notOwnPieces = (state->color == WHITE ? ~getWhitePiecesBoard() : ~getBlackPiecesBoard());
         return knightMoves(pos) & notOwnPieces;
     case B:
     case b:
-        notOwnPieces = (state->color == WHITE ? ~state->occupied[WHITE] : ~state->occupied[BLACK]);
+        notOwnPieces = (state->color == WHITE ? ~getWhitePiecesBoard() : ~getBlackPiecesBoard());
         return bishopMoves(pos) & notOwnPieces;
     case K:
     case k:
-        notOwnPieces = (state->color == WHITE ? ~state->occupied[WHITE] : ~state->occupied[BLACK]);
+        notOwnPieces = (state->color == WHITE ? ~getWhitePiecesBoard() : ~getBlackPiecesBoard());
         oppositeKingPos = state->color == BLACK ? getPiecePos(K) : getPiecePos(k);
         return (kingMoves(pos) & ~kingMoves(oppositeKingPos)) & notOwnPieces;
     case P:
-        oppositePieces = state->color == BLACK ? state->occupied[WHITE] : state->occupied[BLACK];
+        oppositePieces = state->color == BLACK ? getWhitePiecesBoard() : getBlackPiecesBoard();
         return pawnWhiteMoves(pos) | (pawnWhiteHitMoves(pos) & oppositePieces);
     case p:
-        oppositePieces = state->color == BLACK ? state->occupied[WHITE] : state->occupied[BLACK];
+        oppositePieces = state->color == BLACK ? getWhitePiecesBoard() : getBlackPiecesBoard();
         return pawnBlackMoves(pos) | (pawnBlackHitMoves(pos) & oppositePieces);
     case R:
     case r:
-        notOwnPieces = (state->color == WHITE ? ~state->occupied[WHITE] : ~state->occupied[BLACK]);
+        notOwnPieces = (state->color == WHITE ? ~getWhitePiecesBoard() : ~getBlackPiecesBoard());
         return rookMoves(pos) & notOwnPieces;
     case Q:
     case q:
-        notOwnPieces = (state->color == WHITE ? ~state->occupied[WHITE] : ~state->occupied[BLACK]);
+        notOwnPieces = (state->color == WHITE ? ~getWhitePiecesBoard() : ~getBlackPiecesBoard());
         return (rookMoves(pos) | bishopMoves(pos)) & notOwnPieces;
     default:
         return 0;

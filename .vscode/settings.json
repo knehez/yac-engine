@@ -68,6 +68,15 @@
         "locale": "cpp",
         "queue": "cpp",
         "xlocbuf": "cpp",
-        "xlocmes": "cpp"
+        "xlocmes": "cpp",
+        "chrono": "cpp",
+        "ratio": "cpp",
+        "xthread": "cpp",
+        "thread": "cpp",
+        "atomic": "cpp",
+        "optional": "cpp",
+        "xxatomic": "cpp",
+        "memory_resource": "cpp",
+        "string_view": "cpp"
     }
 }

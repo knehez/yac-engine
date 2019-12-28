@@ -13,7 +13,18 @@ TEST(boardTest, emptyBoard)
     EXPECT_EQ(board.to_string(a3, h3), "--------");
     EXPECT_EQ(board.to_string(a2, h2), "--------");
     EXPECT_EQ(board.to_string(a1, h1), "--------");
-    EXPECT_EQ(board.getFENCode(), "8/8/8/8/8/8/8/8");
+    EXPECT_EQ(board.getFENCode(), "8/8/8/8/8/8/8/8 b - - 0 1");
+    EXPECT_GT(chrono(), 0.0);    
+}
+
+TEST(boardTest, toStringTests)
+{
+    ChessBoard board;
+    Move m;
+    m.start = e2;
+    m.end = e4;
+    EXPECT_EQ(board.to_string(m), "e2e4");
+    EXPECT_EQ(board.to_string(m.start), "e2");
     EXPECT_GT(chrono(), 0.0);    
 }
 
@@ -29,7 +40,7 @@ TEST(boardTest, fenBoardStartingPosition)
     EXPECT_EQ(board.to_string(a3, h3), "--------");
     EXPECT_EQ(board.to_string(a2, h2), "PPPPPPPP");
     EXPECT_EQ(board.to_string(a1, h1), "RNBQKBNR");
-    EXPECT_EQ(board.getFENCode(), "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR");
+    EXPECT_EQ(board.getFENCode(), "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
 
     // count pieces
     EXPECT_EQ(countPiecesOnBoard(board.getBlackPiecesBoard() | board.getBlackPiecesBoard()), 16);
