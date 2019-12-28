@@ -4,7 +4,7 @@
 TEST(boardTest, emptyBoard)
 {
     ChessBoard board;
-    board.setFENCode("8/8/8/8/8/8/8/8");
+    board.setFENCode("8/8/8/8/8/8/8/8 w - - 0 1");
     EXPECT_EQ(board.to_string(a8, h8), "--------");
     EXPECT_EQ(board.to_string(a7, h7), "--------");
     EXPECT_EQ(board.to_string(a5, h5), "--------");
@@ -13,7 +13,7 @@ TEST(boardTest, emptyBoard)
     EXPECT_EQ(board.to_string(a3, h3), "--------");
     EXPECT_EQ(board.to_string(a2, h2), "--------");
     EXPECT_EQ(board.to_string(a1, h1), "--------");
-    EXPECT_EQ(board.getFENCode(), "8/8/8/8/8/8/8/8 b - - 0 1");
+    EXPECT_EQ(board.getFENCode(), "8/8/8/8/8/8/8/8 w - - 0 1");
     EXPECT_GT(chrono(), 0.0);    
 }
 
