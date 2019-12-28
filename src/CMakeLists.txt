@@ -15,7 +15,7 @@ endif()
 
 add_executable(${BINARY}_run ${SOURCES})
 
-add_library(${BINARY}_lib STATIC ${SOURCES} ${CMAKE_THREAD_LIBS_INIT})
+add_library(${BINARY}_lib STATIC ${SOURCES})
 
 # extra warnings
 #target_compile_options(${BINARY}_lib PRIVATE -Werror -Wall -Wextra)
