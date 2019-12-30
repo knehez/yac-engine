@@ -131,7 +131,7 @@ TEST(boardTest, rankAttack)
     auto board1 = board.rankAttack(pawns, d1);
     EXPECT_EQ(board.showOneBitBoard(board1, a1, h1), "-XX-XXX-");
 
-    board.clear();
+    board.clearBoard();
     board.setPiece(a3, 'K');
     board.setPiece(b3, 'K');
     board.setPiece(c3, 'K');

@@ -105,7 +105,7 @@ TEST(perftTest, discoverPromotinBug)
     EXPECT_EQ(engine.perft(5), 3605103);
 }
 
-TEST(perftTest, GeneralPerft3)
+TEST(perftTest, GeneralPerftSet)
 {
     Engine engine;
     engine.setFENCode("3k4/3p4/8/K1P4r/8/8/8/8 b - - 0 1");

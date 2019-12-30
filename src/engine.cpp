@@ -8,7 +8,14 @@
 
 void Engine::setFENCode(const char *fen)
 {
+    board.setInitialState();
     board.setFENCode(fen);
+}
+
+void Engine::move(Move m)
+{
+    board.validateMove(&m); // TODO: invalid move?
+    board.move(m);
 }
 
 void Engine::handleUCI()
@@ -21,7 +28,7 @@ void Engine::handleUCI()
 
         if (strUCI == "uci")
         {
-            std::cout << "id name Yacengine\n";
+            std::cout << "id name YaC-Engine\n";
             std::cout << "id author Karoly Nehez\n";
             //options go here
             std::cout << "uciok\n";
@@ -43,18 +50,19 @@ void Engine::handleUCI()
         }
         if (strUCI.rfind("position", 0) == 0)
         {
-            strUCI = strUCI.substr(9);
-            if (strUCI.find("startpos ") != std::string::npos)
+            strUCI = strUCI.substr(8);
+            if (strUCI.find("startpos") != std::string::npos)
             {
+                board.setInitialState();
                 board.setFENCode("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
-                board.initialState();
             }
             else if (strUCI.find("fen") != std::string::npos)
             {
-                strUCI = strUCI.substr(4);
+                strUCI = strUCI.substr(strUCI.find("fen") + 4);
+                board.setInitialState();
                 board.setFENCode(strUCI.c_str());
-                board.initialState();
             }
+            strUCI = strUCI.substr(1);
             if (strUCI.find("moves") != std::string::npos)
             {
                 strUCI = strUCI.substr(strUCI.find("moves") + 6);
@@ -73,7 +81,11 @@ void Engine::handleUCI()
                 {
                     Move m;
                     parseMove(move, &m);
-                    board.validateMove(&m);
+                    if(board.validateMove(&m))
+                    {
+                        std::cout << "Invalid move: " << board.to_string(m) << "\n";
+                        continue; 
+                    }
                     board.move(m);
                 }
             }
@@ -88,58 +100,82 @@ void Engine::start()
     uci.join();
 }
 
-Move Engine::go()
+Move Engine::go(int searchDepth)
 {
     Moves moves;
-    Color myColor = board.getColor();
-    std::cout << "info color=" << (myColor == WHITE ? "WHITE" : "BLACK");
+    std::vector<NodeStatistics> stats;
+
+    monteCarloDepth = searchDepth;
+    enginePlayColor = board.getColor();
+
     moves = board.generateMoves(moves);
-    std::vector<int> v;
+
     for (int i = 0; i < moves.length; i++)
     {
-        board.move(moves.move[i]);
-        v.push_back(monteCarloSearch(board.getFENCode().c_str()));
-        board.undoMove(moves.move[i]);
+        stats.push_back(monteCarloSearch(board.getFENCode().c_str(), moves.move[i]));
+    }
+    std::cout << "\n";
+
+    std::vector<float> results;
+    std::vector<std::pair<float, int>> sortedResults;
+
+    for (int i = 0; i < moves.length; i++)
+    {
+        float res = ((float)stats[i].win - (float)stats[i].lost) / (float)stats[i].trials;
+        results.push_back(res);
+        sortedResults.push_back(std::make_pair(results[i], i));
     }
 
-    int elementIndex = 0;
-    if (myColor == WHITE)
+    sort(sortedResults.begin(), sortedResults.end(), [](std::pair<float, int> a, std::pair<float, int> b) {
+        return a.first > b.first;
+    });
+
+    for (int i = 0; i < sortedResults.size(); i++)
     {
-        elementIndex = (int)(std::min_element(v.begin(), v.end()) - v.begin());
+        int index = sortedResults[i].second;
+        std::cout << board.to_string(moves.move[index]) << " wins:" << stats[index].win
+                  << " losts:" << stats[index].lost
+                  << " trials:" << stats[index].trials << " -> " << results[index] << "\n";
     }
-    else
-    {
-        elementIndex = (int)(std::max_element(v.begin(), v.end()) - v.begin());
-    }
-    board.move(moves.move[elementIndex]);
-    return moves.move[elementIndex];
+
+    board.move(moves.move[sortedResults[0].second]);
+    return moves.move[sortedResults[0].second];
 }
 
-int Engine::monteCarloSearch(const char *fen)
+NodeStatistics Engine::monteCarloSearch(const char *fen, Move startingMove)
 {
-    uint64_t count = 0;
-    int sumValue = 0;
-    int value = 0;
+    float value = 0;
     bool isMateFound = false;
-    for (int i = 0; i < 1000; i++)
+
+    NodeStatistics stat;
+
+    board.move(startingMove);
+
+    for (int i = 0; i < 1000; i++, stat.trials++)
     {
-        count += monteCarloSimulation(12, isMateFound, value);
-        if (board.getFENCode() != fen)
-        {
-            std::cout << "info ******************** DIFFERENT FEN! **************************";
-        }
+        monteCarloSimulation(monteCarloDepth, isMateFound, value);
+
         if (isMateFound)
         {
-            sumValue += value;
-            value = 0;
+            if (value > 0.0f)
+            {
+                stat.win += value;
+            }
+            else
+            {
+                stat.lost += -value;
+            }
             isMateFound = false;
-            board.setFENCode(fen);
+            // std::cout << board.to_string(startingMove);
         }
     }
-    return sumValue;
+
+    board.undoMove(startingMove);
+
+    return stat;
 }
 
-uint64_t Engine::monteCarloSimulation(int depth, bool &isMateFound, int &value)
+void Engine::monteCarloSimulation(int depth, bool &isMateFound, float &value)
 {
     uint64_t count = 0;
     Moves moves;
@@ -150,30 +186,29 @@ uint64_t Engine::monteCarloSimulation(int depth, bool &isMateFound, int &value)
     if (moves.length == 0)
     {
         isMateFound = true;
-        std::cout << "\n"
-                  << board.getFENCode() << "\n";
-        std::cout << (board.getColor() == WHITE ? "WHITE" : "BLACK") << "\n";
-        value = board.getColor() == WHITE ? 1 : -1;
-        return 1;
+        // std::cout << "\n"
+        //          << board.getFENCode() << " " << (board.getColor() == WHITE ? "WHITE" : "BLACK") << "\n";
+        value = (board.getColor() == enginePlayColor) ? -1.0f * ((float)depth / (float)monteCarloDepth) : 1.0f * ((float)depth / (float)monteCarloDepth);
+        return;
     }
     int randomIndex = rand() % moves.length;
 
     if (depth == 1)
     {
-        return 1;
+        return;
     }
-    move(moves.move[randomIndex]);
+    board.move(moves.move[randomIndex]);
 
-    count += monteCarloSimulation(depth - 1, isMateFound, value);
+    monteCarloSimulation(depth - 1, isMateFound, value);
 
     board.undoMove(moves.move[randomIndex]);
 
     if (isMateFound)
     {
-        std::cout << board.to_string(moves.move[randomIndex]) << " ";
+        // std::cout << board.to_string(moves.move[randomIndex]) << " ";
     }
 
-    return count;
+    return;
 }
 
 uint64_t Engine::perft(int depth)
@@ -184,21 +219,24 @@ uint64_t Engine::perft(int depth)
     moves = board.generateMoves(moves);
     if (depth == 1)
     {
-        /*for (int i = 0; i < moves.length; i++)
+        /*
+        for (int i = 0; i < moves.length; i++)
         {
             for (auto m : board.matchMoves)
             {
                 board.fenFile << board.to_string(m) << '|';
             }
             board.fenFile << board.to_string(moves.move[i]) << "\n";
-        }*/
-
+        }
+        */
         return moves.length;
     }
     for (int i = 0; i < moves.length; i++)
     {
         board.move(moves.move[i]);
+        board.matchMoves.push_back(moves.move[i]);
         count += perft(depth - 1);
+        board.matchMoves.pop_back();
         board.undoMove(moves.move[i]);
     }
     return count;
@@ -208,11 +246,29 @@ void Engine::parseMove(std::string move, Move *m)
 {
     m->start = (Position)(((move[1] - '1') << 3) + (move[0] - 'a'));
     m->end = (Position)(((move[3] - '1') << 3) + (move[2] - 'a'));
+    // with promotion?
     if (move.length() == 5)
     {
+        Color color = WHITE;
+        if (move[3] = '1')
+        {
+            color = BLACK;
+        }
         if (move[4] == 'r')
         {
-            // TODO: handle promotions...
+            m->promotion = color == WHITE ? R : r;
+        }
+        if (move[4] == 'n')
+        {
+            m->promotion = color == WHITE ? N : n;
+        }
+        if (move[4] == 'b')
+        {
+            m->promotion = color == WHITE ? B : b;
+        }
+        if (move[4] == 'q')
+        {
+            m->promotion = color == WHITE ? Q : q;
         }
     }
 }

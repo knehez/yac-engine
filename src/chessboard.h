@@ -23,15 +23,14 @@ class ChessBoard
 {
 public:
     ChessBoard();
-    void initialState();
-
-    std::ofstream fenFile;
+    void setInitialState();    
+    // std::ofstream fenFile;
     std::vector<Move> matchMoves;
     void setFENCode(const char *fenstr);
     std::string getFENCode();
 
-    std::string to_string(Move move);
-    std::string to_string(Position pos);
+    static std::string to_string(Move move);
+    static std::string to_string(Position pos);
     std::string to_string(int startPos = a1, int endPos = h8);
 
     void move(Move);
@@ -52,7 +51,7 @@ public:
     bool isMate();
     bool isStaleMate();
     Color getColor();
-    void clear();
+    void clearBoard();
     std::string showOneBitBoard(uint64_t board, int startPos = a1, int endPos = h8);
     //
     // misc - data
@@ -61,7 +60,6 @@ public:
     uint64_t perftChecks = 0;
 
 private:
-    //restoreBoard();
     FRIEND_TEST(boardTest, rankAttack);
     uint64_t rankAttack(uint64_t occupancy, Position pos);
     FRIEND_TEST(boardTest, fileAttack);

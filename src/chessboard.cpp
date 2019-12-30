@@ -4,9 +4,9 @@
 
 ChessBoard::ChessBoard()
 {
-    // debugging rsult file
-    fenFile.open("fenResult.txt");
-    clear();
+    // debugging result file
+    // fenFile.open("fenResult.txt");
+    clearBoard();
 
     for (int x = a1; x < NUMBER_OF_SQUARES; x++)
     {
@@ -81,11 +81,6 @@ ChessBoard::ChessBoard()
             }
         }
     }
-    initialState();
-}
-
-void ChessBoard::initialState()
-{
     state->color = WHITE;
 }
 
@@ -100,7 +95,7 @@ Position ChessBoard::nextSquare(uint64_t *board)
     return (Position)index;
 }
 
-void ChessBoard::clear()
+void ChessBoard::clearBoard()
 {
     for (int i = 0; i < NUMBER_OF_PIECES; i++)
     {
@@ -261,9 +256,19 @@ std::string ChessBoard::getFENCode()
     return fen;
 }
 
+void ChessBoard::setInitialState()
+{
+    // reset states stack
+    state = &_stack[0];
+    state->castling = CASTLING_BLACK_KINGSIDE | CASTLING_BLACK_QUEENSIDE | CASTLING_WHITE_KINGSIDE | CASTLING_WHITE_QUEENSIDE;
+    state->color = WHITE;
+    state->enpassant = NUMBER_OF_SQUARES;
+}
+
 void ChessBoard::setFENCode(const char *fenCode)
 {
-    clear();
+    clearBoard();
+
     int rowNumber = 7;
     int boardPos = 8 * rowNumber;
 
@@ -380,16 +385,13 @@ bool ChessBoard::validateMove(Move *userMove)
     Moves moves;
     moves = generateMoves(moves);
 
-    if (getPieceAt(userMove->end) != NUMBER_OF_PIECES)
-    {
-        userMove->captured = getPieceAt(userMove->end);
-    }
-
     for (int i = 0; i < moves.length; i++)
     {
         Move m = moves.move[i];
-        if (m.start == userMove->start && m.end == userMove->end)
+        if (m.start == userMove->start && m.end == userMove->end && m.promotion == userMove->promotion)
         {
+            userMove->captured = m.captured;
+            userMove->enpassant = m.enpassant;
             return true;
         }
     }
@@ -588,26 +590,6 @@ bool ChessBoard::isStaleMate()
     {
         return false;
     }
-}
-
-std::string too_string(Moves moves)
-{
-    std::string strMove;
-    for (int i = 0; i < moves.length; i++)
-    {
-        strMove += algebraicFile(moves.move[i].start);
-        strMove += algebraicRank(moves.move[i].start);
-        strMove += algebraicFile(moves.move[i].end);
-        strMove += algebraicRank(moves.move[i].end);
-        if (moves.move[i].promotion != NUMBER_OF_PIECES)
-        {
-            strMove += "(";
-            strMove += piecesChars[moves.move[i].promotion];
-            strMove += ")";
-        }
-        strMove += "|";
-    }
-    return strMove;
 }
 
 std::string ChessBoard::to_string(Position pos)
