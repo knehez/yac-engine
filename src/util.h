@@ -188,3 +188,6 @@ typedef struct Moves {
 } Moves;
 
 std::string to_string(Moves moves); 
+void removeOneMove(Moves &moves, Move move);
+
+#define NULL_MOVE {NUMBER_OF_SQUARES, NUMBER_OF_SQUARES, NUMBER_OF_PIECES, NUMBER_OF_PIECES, NUMBER_OF_SQUARES}

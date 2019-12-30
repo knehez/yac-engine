@@ -106,8 +106,8 @@ TEST(moveTest, moveUndoMove)
 
     board.move(m1);
     board.move(m2);
-    board.undoMove(m2);
-    board.undoMove(m1);
+    board.undoMove();
+    board.undoMove();
     EXPECT_EQ(board.getFENCode(), fenCode);
 }
 
@@ -129,8 +129,8 @@ TEST(moveTest, moreMoves)
 
     board.move(m1);
     board.move(m2);
-    board.undoMove(m2);
-    board.undoMove(m1);
+    board.undoMove();
+    board.undoMove();
 
     EXPECT_EQ(board.getFENCode(), "rn1qkb1r/pp3ppp/2p1pnb1/6B1/1P2N3/3P1N2/P1P1QPPP/R3KB1R b KQkq - 0 1");
 }
@@ -146,7 +146,7 @@ TEST(moveTest, blackPromotionsSimpleUndo)
 
     m1.promotion = r;
     board.move(m1);
-    board.undoMove(m1);
+    board.undoMove();
     // undo() do not make wrong the boards
     EXPECT_EQ(board.getFENCode(), "8/1P6/5k2/8/8/5K2/1p6/8 b - - 0 1");
 }
@@ -299,9 +299,9 @@ TEST(moveTest, castlingBug)
 
     EXPECT_EQ(board.getFENCode(), "4k3/8/8/8/8/7p/7P/4R1K1 b - - 0 1");
 
-    board.undoMove(m3);
-    board.undoMove(m2);
-    board.undoMove(m1);
+    board.undoMove();
+    board.undoMove();
+    board.undoMove();
     EXPECT_EQ(board.getFENCode(), "5k2/8/8/8/8/7p/7P/4K2R w K - 0 1");
 }
 

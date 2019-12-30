@@ -5,6 +5,7 @@
 #include <string>
 #include <sstream>
 #include <vector>
+#include "mcts.h"
 
 void Engine::setFENCode(const char *fen)
 {
@@ -45,7 +46,7 @@ void Engine::handleUCI()
         }
         if (strUCI.rfind("go", 0) == 0)
         {
-            auto bestMove = go();
+            auto bestMove = goMCTS();
             std::cout << "\nbestmove " << board.to_string(bestMove) << "\n";
         }
         if (strUCI.rfind("position", 0) == 0)
@@ -81,10 +82,10 @@ void Engine::handleUCI()
                 {
                     Move m;
                     parseMove(move, &m);
-                    if(board.validateMove(&m))
+                    if (!board.validateMove(&m))
                     {
                         std::cout << "Invalid move: " << board.to_string(m) << "\n";
-                        continue; 
+                        continue;
                     }
                     board.move(m);
                 }
@@ -98,6 +99,78 @@ void Engine::start()
 {
     std::thread uci(&Engine::handleUCI, this);
     uci.join();
+}
+
+Move Engine::goMCTS(int maxIterations)
+{
+    Moves moves;
+    moves = board.generateMoves(moves);
+    enginePlayColor = board.getColor();
+    auto root = std::unique_ptr<Node>(new Node(Move(NULL_MOVE), moves, nullptr, board.getColor()));
+
+    for (int i = 0; i < maxIterations; i++)
+    {
+        auto node = root.get();
+        // selection
+        while (node->moves.length == 0 && node->has_children())
+        {
+            node = node->selectChildWithMaxUCT();
+            board.move(node->currentMove);
+        }
+
+        // expand node with one random move
+        if (node->moves.length > 0)
+        {
+            auto randomMove = node->getRandomMove();
+            board.move(randomMove);
+            moves = board.generateMoves(moves);
+            node = node->addChild(randomMove, moves, board.getColor());
+        }
+
+        // play a random game
+        bool isMateFound = false;
+        float value = 0.0f;
+        float result = 0.0;
+
+        // play a random game
+        monteCarloSimulation(20, isMateFound, value);
+        if (isMateFound)
+        {
+            if (value > 0.0f)
+            {
+                result = 1;
+            }
+            else
+            {
+                result = 0;
+            }
+        }
+
+        // update wins back to the root
+        while (node != nullptr)
+        {
+            if (node->parent != nullptr)
+            {
+                board.undoMove();
+            }
+            node->visits++;
+            node->wins += result;
+            node = node->parent;
+        }
+    }
+
+    auto node = root.get();
+    while (node->has_children())
+    {
+        sort(node->children.begin(), node->children.end(), [](Node *a, Node *b) {
+            return a->wins > b->wins;
+        });
+        node = node->children[0];
+    }
+
+    std::cout << root.get()->tree_to_string(3);
+
+    return root.get()->children[0]->currentMove;
 }
 
 Move Engine::go(int searchDepth)
@@ -170,7 +243,7 @@ NodeStatistics Engine::monteCarloSearch(const char *fen, Move startingMove)
         }
     }
 
-    board.undoMove(startingMove);
+    board.undoMove();
 
     return stat;
 }
@@ -188,7 +261,7 @@ void Engine::monteCarloSimulation(int depth, bool &isMateFound, float &value)
         isMateFound = true;
         // std::cout << "\n"
         //          << board.getFENCode() << " " << (board.getColor() == WHITE ? "WHITE" : "BLACK") << "\n";
-        value = (board.getColor() == enginePlayColor) ? -1.0f * ((float)depth / (float)monteCarloDepth) : 1.0f * ((float)depth / (float)monteCarloDepth);
+        value = (board.getColor() == enginePlayColor) ? -1.0f : 1.0f;
         return;
     }
     int randomIndex = rand() % moves.length;
@@ -201,7 +274,7 @@ void Engine::monteCarloSimulation(int depth, bool &isMateFound, float &value)
 
     monteCarloSimulation(depth - 1, isMateFound, value);
 
-    board.undoMove(moves.move[randomIndex]);
+    board.undoMove();
 
     if (isMateFound)
     {
@@ -237,7 +310,7 @@ uint64_t Engine::perft(int depth)
         board.matchMoves.push_back(moves.move[i]);
         count += perft(depth - 1);
         board.matchMoves.pop_back();
-        board.undoMove(moves.move[i]);
+        board.undoMove();
     }
     return count;
 }
@@ -250,7 +323,7 @@ void Engine::parseMove(std::string move, Move *m)
     if (move.length() == 5)
     {
         Color color = WHITE;
-        if (move[3] = '1')
+        if (move[3] == '1')
         {
             color = BLACK;
         }

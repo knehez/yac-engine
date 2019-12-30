@@ -554,7 +554,7 @@ void ChessBoard::move(Move move)
     state->color = oppositeColor(state->color);
 }
 
-void ChessBoard::undoMove(Move move)
+void ChessBoard::undoMove()
 {
     state--;
 }
@@ -614,6 +614,16 @@ std::string ChessBoard::to_string(Move move)
     return strMove;
 }
 
+std::string ChessBoard::to_string(Moves moves)
+{
+    std::string result;
+    for (int i = 0; i < moves.length; i++)
+    {
+        result += to_string(moves.move[i]);
+    }
+    return result;
+}
+
 Color ChessBoard::getColor()
 {
     return state->color;
@@ -632,7 +642,7 @@ Moves ChessBoard::generateMoves(Moves moves)
     while (board)
     {
         auto actualPiecePos = nextSquare(&board);
-        if(actualPiecePos < 0 || actualPiecePos > NUMBER_OF_SQUARES)
+        if (actualPiecePos < 0 || actualPiecePos > NUMBER_OF_SQUARES)
         {
             std::cout << "illegal position";
         }
@@ -646,6 +656,8 @@ Moves ChessBoard::generateMoves(Moves moves)
                 Piece movingPiece = getPieceAt((Position)actualPiecePos);
                 currentMove->start = (Position)actualPiecePos;
                 currentMove->end = (Position)endPos;
+                currentMove->promotion = NUMBER_OF_PIECES;
+                currentMove->enpassant = NUMBER_OF_SQUARES;
                 currentMove->captured = getPieceAt((Position)endPos);
 
                 auto piecerank = rank(currentMove->end);

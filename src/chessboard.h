@@ -31,10 +31,12 @@ public:
 
     static std::string to_string(Move move);
     static std::string to_string(Position pos);
+    static std::string to_string(Moves moves);
+    
     std::string to_string(int startPos = a1, int endPos = h8);
 
     void move(Move);
-    void undoMove(Move);
+    void undoMove();
     bool validateMove(Move *);
 
     void setPiece(int pos, char piece);

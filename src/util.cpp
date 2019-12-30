@@ -89,3 +89,45 @@ std::string to_string(Moves moves)
     }
     return strMove;
 }
+
+bool operator==(const Move &lmove, const Move &rmove)
+{
+    if (lmove.start == rmove.start &&
+        lmove.end == rmove.end &&
+        lmove.captured == rmove.captured &&
+        lmove.enpassant == rmove.enpassant &&
+        lmove.promotion == rmove.promotion)
+    {
+        return true;
+    }
+    return false;
+}
+
+void removeOneMove(Moves &moves, Move move)
+{
+    int i = 0;
+    for (; i < moves.length; i++)
+    {
+        if (moves.move[i] == move)
+        {
+            break;
+        }
+    }
+
+    if (i == moves.length)
+    {
+        // item not found
+        return;
+    }
+
+    if (i == moves.length - 1)
+    {
+        // item is the last element
+        moves.length--;
+        return;
+    }
+
+    // quick remove: swap item with the last one
+    moves.move[i] = moves.move[moves.length - 1];
+    moves.length--;
+}

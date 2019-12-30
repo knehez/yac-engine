@@ -18,6 +18,7 @@ public:
     void setFENCode(const char *fenstr);
     void move(Move m);
     Move go(int searchDepth = 12);
+    Move goMCTS(int maxIterations = 10000);
 private:
     void monteCarloSimulation(int depth, bool &isMateFound, float &value);
     void handleUCI();
