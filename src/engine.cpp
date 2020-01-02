@@ -168,7 +168,9 @@ Move Engine::goMCTS(int maxIterations)
         node = node->children[0];
     }
 
-    std::cout << root.get()->tree_to_string(3);
+    /*std::cout << root.get()->tree_to_string();
+    std::cout << "-------------------------";*/
+    std::cout << root.get()->tree_to_dot();
 
     return root.get()->children[0]->currentMove;
 }

@@ -19,6 +19,7 @@ TEST(gameTest, MateInSix)
     Move bestMove = engine.go(2);
 
     EXPECT_EQ(true, true);
+    // EXPECT_EQ(ChessBoard::to_string(bestMove), "e1e8");
 }
 
 TEST(gameTest, MCTSTest1)
@@ -35,7 +36,7 @@ TEST(gameTest, MateInSix2)
 {
     srand(0); // make random moves deterministic
     Engine engine;
-    engine.setFENCode("r4k2/pp1P2pp/1q6/3Q2p1/2p5/8/5PPP/4R1K1 w - - 0 1");
+    engine.setFENCode("r4k2/pp1P2pp/1q6/3Q2p1/2p5/4R3/5PPP/6K1 b - - 0 1");
                        
     Move bestMove = engine.goMCTS(10000);
     
