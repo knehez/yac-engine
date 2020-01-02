@@ -34,7 +34,7 @@ TEST(moveTest, whiteCheckers)
 TEST(moveTest, escapeFromCheck)
 {
     ChessBoard board;
-    board.setFENCode("1Q3B2/8/R2k4/2P1PN2/8/8/8/8 b - - 0 1");
+    board.setFENCode("1Q3B2/8/R2k4/2P1PN2/8/1K6/8/8 b - - 0 1");
     Moves m;
     auto moves = board.generateMoves(m);
     EXPECT_EQ(to_string(moves), "d6d5|d6d7|");

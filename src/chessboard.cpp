@@ -10,6 +10,35 @@ ChessBoard::ChessBoard()
 
     for (int x = a1; x < NUMBER_OF_SQUARES; x++)
     {
+        // generate knight moves
+        uint64_t tmp = 1LLU << x;
+        uint64_t knightMove = KNIGHT_NORTH_EAST(tmp) & notHFile;
+        knightMove |= KNIGHT_NORTH_WEST(tmp) & notAFile;
+        knightMove |= KNIGHT_EAST_NORTH(tmp) & notGHFile;
+        knightMove |= KNIGHT_EAST_SOUTH(tmp) & notABFile;
+        knightMove |= KNIGHT_WEST_NORTH(tmp) & notABFile;
+        knightMove |= KNIGHT_WEST_SOUTH(tmp) & notGHFile;
+        knightMove |= KNIGHT_SOUTH_EAST(tmp) & notHFile;
+        knightMove |= KNIGHT_SOUTH_WEST(tmp) & notAFile;
+        MASK[x].knight = knightMove;
+
+        // generate king moves
+        uint64_t kingMove = NORTH(tmp);
+        kingMove |= SOUTH(tmp);
+        kingMove |= EAST(tmp) & notHFile;
+        kingMove |= WEST(tmp) & notAFile;
+        kingMove |= NORTH_EAST(tmp) & notHFile;
+        kingMove |= NORTH_WEST(tmp) & notAFile;
+        kingMove |= SOUTH_EAST(tmp) & notHFile;
+        kingMove |= SOUTH_WEST(tmp) & notAFile;
+        MASK[x].king = kingMove;
+
+        // pawnBlackHitMoves - hit south east and west if possible
+        MASK[x].pawnBlackHits = ((SOUTH_EAST(tmp) & notHFile) | (SOUTH_WEST(tmp) & notAFile));
+
+        // whitePawnHitMoves - move south if there is not any pieces in front of the pawn
+        MASK[x].pawnWhiteHits = ((NORTH_EAST(tmp) & notHFile) | (NORTH_WEST(tmp) & notAFile));
+
         for (int f = 0; f < 8; f++)
         {
             RANK_ATTACK[x * 8 + f] = generate_rank_attack(x * 2, f);
@@ -634,7 +663,7 @@ Moves ChessBoard::generateMoves(Moves moves)
     auto startMove = &moves.move[0];
     auto currentMove = startMove;
     uint64_t board;
-
+    
     state->color == WHITE ? board = getWhitePiecesBoard() : board = getBlackPiecesBoard();
 
     uint64_t tempBoard[NUMBER_OF_PIECES];
@@ -910,16 +939,7 @@ uint64_t ChessBoard::bishopMoves(Position pos)
 
 uint64_t ChessBoard::knightMoves(Position pos)
 {
-    uint64_t tmp = 1LLU << pos;
-    uint64_t ret = KNIGHT_NORTH_EAST(tmp) & notHFile;
-    ret |= KNIGHT_NORTH_WEST(tmp) & notAFile;
-    ret |= KNIGHT_EAST_NORTH(tmp) & notGHFile;
-    ret |= KNIGHT_EAST_SOUTH(tmp) & notABFile;
-    ret |= KNIGHT_WEST_NORTH(tmp) & notABFile;
-    ret |= KNIGHT_WEST_SOUTH(tmp) & notGHFile;
-    ret |= KNIGHT_SOUTH_EAST(tmp) & notHFile;
-    ret |= KNIGHT_SOUTH_WEST(tmp) & notAFile;
-    return ret;
+    return MASK[pos].knight;
 }
 
 uint64_t ChessBoard::pawnBlackMoves(Position pos)
@@ -946,18 +966,12 @@ uint64_t ChessBoard::pawnBlackMoves(Position pos)
 
 uint64_t ChessBoard::pawnBlackHitMoves(Position pos)
 {
-    uint64_t tmp = 1LLU << pos;
-    // hit south east and west if possible
-    uint64_t ret = ((SOUTH_EAST(tmp) & notHFile) | (SOUTH_WEST(tmp) & notAFile));
-    return ret;
+    return MASK[pos].pawnBlackHits;
 }
 
 uint64_t ChessBoard::pawnWhiteHitMoves(Position pos)
 {
-    uint64_t tmp = 1LLU << pos;
-    // move south if there is not any pieces in front of the pawn
-    uint64_t ret = ((NORTH_EAST(tmp) & notHFile) | (NORTH_WEST(tmp) & notAFile));
-    return ret;
+    return MASK[pos].pawnWhiteHits;
 }
 
 uint64_t ChessBoard::pawnWhiteMoves(Position pos)
@@ -984,16 +998,7 @@ uint64_t ChessBoard::pawnWhiteMoves(Position pos)
 
 uint64_t ChessBoard::kingMoves(Position pos)
 {
-    uint64_t tmp = 1LLU << pos;
-    uint64_t ret = NORTH(tmp);
-    ret |= SOUTH(tmp);
-    ret |= EAST(tmp) & notHFile;
-    ret |= WEST(tmp) & notAFile;
-    ret |= NORTH_EAST(tmp) & notHFile;
-    ret |= NORTH_WEST(tmp) & notAFile;
-    ret |= SOUTH_EAST(tmp) & notHFile;
-    ret |= SOUTH_WEST(tmp) & notAFile;
-    return ret;
+    return MASK[pos].king;
 }
 
 std::string ChessBoard::showOneBitBoard(uint64_t board, int startPos, int endPos)

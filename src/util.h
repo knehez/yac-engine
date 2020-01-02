@@ -68,6 +68,10 @@ typedef struct Mask
     uint64_t diagonal;
     uint64_t antidiagonal;
     uint64_t file;
+    uint64_t knight;
+    uint64_t king;
+    uint64_t pawnBlackHits;
+    uint64_t pawnWhiteHits;
 } Mask;
 
 enum Color
