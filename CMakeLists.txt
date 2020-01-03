@@ -5,7 +5,7 @@ project(yace VERSION 1.0
 
 find_package (Threads)
 
-set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_COMPILE_FEATURES EHsc)
 
 if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")

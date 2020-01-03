@@ -3,6 +3,7 @@
 #include "engine.h"
 #include <vector>
 #include <algorithm>
+#include <cmath>
 
 class Node
 {
@@ -12,7 +13,7 @@ public:
     Node *addChild(Move move, Moves moves, Color playerColor);
     bool has_children() const { return !children.empty(); }
     Node *selectChildWithMaxUCT() const;
-    Move Node::getRandomMove();
+    Move getRandomMove();
 
     Node *const parent;
     std::vector<Node *> children;
@@ -23,15 +24,15 @@ public:
     int visits;
     Color playerToMove;
     double utcScore;
-    std::string Node::tree_to_string(int max_depth = 1000000, int indent = 0);
-    std::string Node::tree_to_dot(int max_depth = 1000000, int indent = 0);
+    std::string tree_to_string(int max_depth = 1000000, int indent = 0);
+    std::string tree_to_dot(int max_depth = 1000000, int indent = 0);
 
 private:
     Node(const Node &);
     Node &operator=(const Node &);
-    std::string Node::indent_string(int indent);
-    std::string Node::to_string();
-    std::string Node::to_string_node();
+    std::string indent_string(int indent);
+    std::string to_string();
+    std::string to_string_node();
 };
 
 Node::Node(Move move, Moves moves, Node *parent, Color playerColor)

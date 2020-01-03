@@ -186,12 +186,13 @@ enum
     MAX_MOVES = 256
 };
 
-typedef struct Moves {
-	Move move[MAX_MOVES];
-	int length = 0;
+typedef struct Moves
+{
+    Move move[MAX_MOVES];
+    int length = 0;
 } Moves;
 
-std::string to_string(Moves moves); 
+std::string to_string(Moves moves);
 void removeOneMove(Moves &moves, Move move);
 
-#define NULL_MOVE {NUMBER_OF_SQUARES, NUMBER_OF_SQUARES, NUMBER_OF_PIECES, NUMBER_OF_PIECES, NUMBER_OF_SQUARES}
+#define NULL_MOVE { NUMBER_OF_SQUARES, NUMBER_OF_SQUARES, NUMBER_OF_PIECES, NUMBER_OF_PIECES, NUMBER_OF_SQUARES }
