@@ -47,7 +47,7 @@ public:
 
     uint64_t getBoard(char piece);
 
-    uint64_t allPieceMoves(Position pos);
+    uint64_t allPieceMoves(Position pos, Piece *movingPiece);
     Moves generateMoves(Moves moves);
 
     bool isMate();

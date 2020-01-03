@@ -14,7 +14,7 @@ TEST(boardTest, emptyBoard)
     EXPECT_EQ(board.to_string(a2, h2), "--------");
     EXPECT_EQ(board.to_string(a1, h1), "--------");
     EXPECT_EQ(board.getFENCode(), "8/8/8/8/8/8/8/8 w - - 0 1");
-    EXPECT_GT(chrono(), 0.0);    
+    EXPECT_GT(chrono(), 0.0);
 }
 
 TEST(boardTest, toStringTests)
@@ -25,7 +25,7 @@ TEST(boardTest, toStringTests)
     m.end = e4;
     EXPECT_EQ(board.to_string(m), "e2e4");
     EXPECT_EQ(board.to_string(m.start), "e2");
-    EXPECT_GT(chrono(), 0.0);    
+    EXPECT_GT(chrono(), 0.0);
 }
 
 TEST(boardTest, fenBoardStartingPosition)
@@ -80,12 +80,13 @@ TEST(boardTest, possibleMovesKing)
 {
     ChessBoard board;
     board.setFENCode("7K/8/8/8/8/8/8/k7 w");
-    auto b = board.allPieceMoves(h8);
+    Piece movingPiece;
+    auto b = board.allPieceMoves(h8, &movingPiece);
     EXPECT_EQ(board.showOneBitBoard(b, a8, h8), "------X-");
     EXPECT_EQ(board.showOneBitBoard(b, a7, h7), "------XX");
 
     board.setFENCode("8/8/8/3K4/8/8/8/k7 w");
-    b = board.allPieceMoves(d5);
+    b = board.allPieceMoves(d5, &movingPiece);
     EXPECT_EQ(board.showOneBitBoard(b, a7, h7), "--------");
     EXPECT_EQ(board.showOneBitBoard(b, a6, h6), "--XXX---");
     EXPECT_EQ(board.showOneBitBoard(b, a5, h5), "--X-X---");
@@ -97,7 +98,8 @@ TEST(boardTest, possibleMovesKingComplex)
 {
     ChessBoard board;
     board.setFENCode("rnbqkbnr/pppppppp/8/8/4P3/5P2/PPPP2PP/RNBQKBNR w KQkq - 0 1");
-    auto b = board.allPieceMoves(e1);
+    Piece movingPiece;
+    auto b = board.allPieceMoves(e1, &movingPiece);
     EXPECT_EQ(board.showOneBitBoard(b, a3, h3), "--------");
     EXPECT_EQ(board.showOneBitBoard(b, a2, h2), "----XX--");
     EXPECT_EQ(board.showOneBitBoard(b, a1, h1), "--------");
@@ -106,8 +108,9 @@ TEST(boardTest, possibleMovesKingComplex)
 TEST(boardTest, possibleMovesRookComplex)
 {
     ChessBoard board;
+    Piece movingPiece;
     board.setFENCode("rnbqkbnr/pppp1ppp/8/3Rp3/2B1P3/5N2/PPPP1PPP/RNBQK3 w Qkq - 2 2");
-    auto b = board.allPieceMoves(d5);
+    auto b = board.allPieceMoves(d5, &movingPiece);
     EXPECT_EQ(board.showOneBitBoard(b, a8, h8), "--------");
     EXPECT_EQ(board.showOneBitBoard(b, a7, h7), "---X----");
     EXPECT_EQ(board.showOneBitBoard(b, a6, h6), "---X----");
@@ -207,8 +210,9 @@ TEST(boardTest, fileAttack)
 TEST(boardTest, possibleMovesKnight)
 {
     ChessBoard board;
+    Piece movingPiece;
     board.setFENCode("8/8/8/7N/8/8/8/8");
-    auto b = board.allPieceMoves(h5);
+    auto b = board.allPieceMoves(h5, &movingPiece);
     EXPECT_EQ(board.showOneBitBoard(b, a8, h8), "--------");
     EXPECT_EQ(board.showOneBitBoard(b, a7, h7), "------X-");
     EXPECT_EQ(board.showOneBitBoard(b, a6, h6), "-----X--");
@@ -218,7 +222,7 @@ TEST(boardTest, possibleMovesKnight)
     EXPECT_EQ(board.showOneBitBoard(b, a2, h2), "--------");
 
     board.setFENCode("8/8/8/6N1/8/8/8/8");
-    b = board.allPieceMoves(g5);
+    b = board.allPieceMoves(g5, &movingPiece);
     EXPECT_EQ(board.showOneBitBoard(b, a8, h8), "--------");
     EXPECT_EQ(board.showOneBitBoard(b, a7, h7), "-----X-X");
     EXPECT_EQ(board.showOneBitBoard(b, a6, h6), "----X---");
@@ -228,7 +232,7 @@ TEST(boardTest, possibleMovesKnight)
     EXPECT_EQ(board.showOneBitBoard(b, a2, h2), "--------");
 
     board.setFENCode("8/8/8/5N2/8/8/8/8");
-    b = board.allPieceMoves(f5);
+    b = board.allPieceMoves(f5, &movingPiece);
     EXPECT_EQ(board.showOneBitBoard(b, a8, h8), "--------");
     EXPECT_EQ(board.showOneBitBoard(b, a7, h7), "----X-X-");
     EXPECT_EQ(board.showOneBitBoard(b, a6, h6), "---X---X");
@@ -238,7 +242,7 @@ TEST(boardTest, possibleMovesKnight)
     EXPECT_EQ(board.showOneBitBoard(b, a2, h2), "--------");
 
     board.setFENCode("8/8/8/1N6/8/8/8/8");
-    b = board.allPieceMoves(b5);
+    b = board.allPieceMoves(b5, &movingPiece);
     EXPECT_EQ(board.showOneBitBoard(b, a8, h8), "--------");
     EXPECT_EQ(board.showOneBitBoard(b, a7, h7), "X-X-----");
     EXPECT_EQ(board.showOneBitBoard(b, a6, h6), "---X----");
@@ -248,7 +252,7 @@ TEST(boardTest, possibleMovesKnight)
     EXPECT_EQ(board.showOneBitBoard(b, a2, h2), "--------");
 
     board.setFENCode("8/8/8/N7/8/8/8/8");
-    b = board.allPieceMoves(a5);
+    b = board.allPieceMoves(a5, &movingPiece);
     EXPECT_EQ(board.showOneBitBoard(b, a8, h8), "--------");
     EXPECT_EQ(board.showOneBitBoard(b, a7, h7), "-X------");
     EXPECT_EQ(board.showOneBitBoard(b, a6, h6), "--X-----");
@@ -258,7 +262,7 @@ TEST(boardTest, possibleMovesKnight)
     EXPECT_EQ(board.showOneBitBoard(b, a2, h2), "--------");
 
     board.setFENCode("8/8/8/8/8/8/8/N7");
-    b = board.allPieceMoves(a1);
+    b = board.allPieceMoves(a1, &movingPiece);
     EXPECT_EQ(board.showOneBitBoard(b, a5, h5), "--------");
     EXPECT_EQ(board.showOneBitBoard(b, a4, h4), "--------");
     EXPECT_EQ(board.showOneBitBoard(b, a3, h3), "-X------");
@@ -266,7 +270,7 @@ TEST(boardTest, possibleMovesKnight)
     EXPECT_EQ(board.showOneBitBoard(b, a1, h1), "--------");
 
     board.setFENCode("7N/8/8/8/8/8/8/8");
-    b = board.allPieceMoves(h8);
+    b = board.allPieceMoves(h8, &movingPiece);
     EXPECT_EQ(board.showOneBitBoard(b, a8, h8), "--------");
     EXPECT_EQ(board.showOneBitBoard(b, a7, h7), "-----X--");
     EXPECT_EQ(board.showOneBitBoard(b, a6, h6), "------X-");
@@ -276,9 +280,10 @@ TEST(boardTest, possibleMovesKnight2)
 {
     // complex move from starting position
     ChessBoard board;
+    Piece movingPiece;
     board.setFENCode("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
 
-    auto b = board.allPieceMoves(b1);
+    auto b = board.allPieceMoves(b1, &movingPiece);
     EXPECT_EQ(board.showOneBitBoard(b, a3, h3), "X-X-----");
     EXPECT_EQ(board.showOneBitBoard(b, a2, h2), "--------");
     EXPECT_EQ(board.showOneBitBoard(b, a1, h1), "--------");
@@ -288,9 +293,10 @@ TEST(boardTest, possibleMovesQueenComplex)
 {
     // complex move from starting position
     ChessBoard board;
+    Piece movingPiece;
     board.setFENCode("rnb1kbnr/p1pp1ppp/8/1p4p1/3B1q2/8/PPPPPPPP/RNBQK1N1 b Qkq - 2 2");
 
-    auto b = board.allPieceMoves(f4);
+    auto b = board.allPieceMoves(f4, &movingPiece);
     EXPECT_EQ(board.showOneBitBoard(b, a8, h8), "--------");
     EXPECT_EQ(board.showOneBitBoard(b, a7, h7), "--------");
     EXPECT_EQ(board.showOneBitBoard(b, a6, h6), "---X-X--");
@@ -305,9 +311,10 @@ TEST(boardTest, possibleMovesWhitePawn)
 {
     // move from starting position
     ChessBoard board;
+    Piece movingPiece;
     board.setFENCode("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w");
 
-    auto b = board.allPieceMoves(e2);
+    auto b = board.allPieceMoves(e2, &movingPiece);
     EXPECT_EQ(board.showOneBitBoard(b, a8, h8), "--------");
     EXPECT_EQ(board.showOneBitBoard(b, a7, h7), "--------");
     EXPECT_EQ(board.showOneBitBoard(b, a6, h6), "--------");
@@ -323,8 +330,8 @@ TEST(boardTest, possibleMovesBlackPawn)
     // move from starting position
     ChessBoard board;
     board.setFENCode("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR b");
-
-    auto b = board.allPieceMoves(f7);
+    Piece movingPiece;
+    auto b = board.allPieceMoves(f7, &movingPiece);
     EXPECT_EQ(board.showOneBitBoard(b, a8, h8), "--------");
     EXPECT_EQ(board.showOneBitBoard(b, a7, h7), "--------");
     EXPECT_EQ(board.showOneBitBoard(b, a6, h6), "-----X--");
@@ -336,7 +343,7 @@ TEST(boardTest, possibleMovesBlackPawn)
 
     board.setFENCode("rnbqkbnr/pppp1ppp/4p3/5P2/3P4/4P3/PPP3PP/RNBQKBNR b");
 
-    b = board.allPieceMoves(e6);
+    b = board.allPieceMoves(e6, &movingPiece);
     EXPECT_EQ(board.showOneBitBoard(b, a8, h8), "--------");
     EXPECT_EQ(board.showOneBitBoard(b, a7, h7), "--------");
     EXPECT_EQ(board.showOneBitBoard(b, a6, h6), "--------");
@@ -349,8 +356,8 @@ TEST(boardTest, possibleMovesBlackPawn)
     // edge of the board
     board.setFENCode("rnbqkbnr/1pppppp1/8/8/p6p/1P4P1/P1PPPP1P/RNBQKBNR b KQkq - 0 1");
 
-    b = board.allPieceMoves(h4);
-    b = b | board.allPieceMoves(a4);
+    b = board.allPieceMoves(h4, &movingPiece);
+    b = b | board.allPieceMoves(a4, &movingPiece);
     auto str = board.showOneBitBoard(b, a1, h8);
 
     EXPECT_EQ(board.showOneBitBoard(b, a8, h8), "--------");
@@ -365,8 +372,8 @@ TEST(boardTest, possibleMovesBlackPawn)
     // edge of the board
     board.setFENCode("rnbqkbnr/p1pppp1p/1p6/P5p1/7P/8/1PPPPPP1/RNBQKBNR w KQkq - 0 1");
 
-    b = board.allPieceMoves(a5);
-    b = b | board.allPieceMoves(h4);
+    b = board.allPieceMoves(a5, &movingPiece);
+    b = b | board.allPieceMoves(h4, &movingPiece);
 
     EXPECT_EQ(board.showOneBitBoard(b, a8, h8), "--------");
     EXPECT_EQ(board.showOneBitBoard(b, a7, h7), "--------");
@@ -383,8 +390,8 @@ TEST(boardTest, possibleMovesBishop)
     // complex move from starting position
     ChessBoard board;
     board.setFENCode("rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR w KQkq - 0 1");
-
-    auto b = board.allPieceMoves(f1);
+    Piece movingPiece;
+    auto b = board.allPieceMoves(f1, &movingPiece);
     EXPECT_EQ(board.showOneBitBoard(b, a6, h6), "X-------");
     EXPECT_EQ(board.showOneBitBoard(b, a5, h5), "-X------");
     EXPECT_EQ(board.showOneBitBoard(b, a4, h4), "--X-----");
@@ -394,7 +401,7 @@ TEST(boardTest, possibleMovesBishop)
 
     // more complex case with a white bishop
     board.setFENCode("rnbqkbnr/p1ppp1pp/1p3p2/8/3BP3/2P5/PPP2PPP/RNBQK1NR w KQkq - 0 1");
-    b = board.allPieceMoves(d4);
+    b = board.allPieceMoves(d4, &movingPiece);
     EXPECT_EQ(board.showOneBitBoard(b, a8, h8), "--------");
     EXPECT_EQ(board.showOneBitBoard(b, a7, h7), "--------");
     EXPECT_EQ(board.showOneBitBoard(b, a6, h6), "-X---X--");
@@ -406,7 +413,7 @@ TEST(boardTest, possibleMovesBishop)
 
     // complex case with a black bishop
     board.setFENCode("rnbqk1nr/p1pppppp/1p6/4b3/4P3/2P1B3/PPP2PPP/RNBQK1NR b KQkq - 0 1");
-    b = board.allPieceMoves(e5);
+    b = board.allPieceMoves(e5, &movingPiece);
     EXPECT_EQ(board.showOneBitBoard(b, a8, h8), "--------");
     EXPECT_EQ(board.showOneBitBoard(b, a7, h7), "--------");
     EXPECT_EQ(board.showOneBitBoard(b, a6, h6), "---X-X--");
@@ -425,7 +432,7 @@ TEST(boardTest, castlingFEN)
     EXPECT_EQ(board.state->castling & CASTLING_BLACK_KINGSIDE, CASTLING_BLACK_KINGSIDE);
     EXPECT_EQ(board.state->castling & CASTLING_BLACK_QUEENSIDE, CASTLING_BLACK_QUEENSIDE);
     EXPECT_EQ(board.state->castling & CASTLING_WHITE_KINGSIDE, CASTLING_WHITE_KINGSIDE);
-    EXPECT_EQ(board.state->castling & CASTLING_WHITE_QUEENSIDE, CASTLING_WHITE_QUEENSIDE);   
+    EXPECT_EQ(board.state->castling & CASTLING_WHITE_QUEENSIDE, CASTLING_WHITE_QUEENSIDE);
 }
 
 TEST(boardTest, entpassant)

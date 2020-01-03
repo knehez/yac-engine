@@ -399,9 +399,11 @@ void ChessBoard::setFENCode(const char *fenCode)
 
 Piece ChessBoard::getPieceAt(Position pos)
 {
+    uint64_t boardPos = (1LLU << pos);
+    
     for (int j = 0; j < NUMBER_OF_PIECES; j++)
     {
-        if (state->boards[j] & (1LLU << pos))
+        if (state->boards[j] & boardPos)
         {
             return (Piece)j;
         }
@@ -663,102 +665,105 @@ Moves ChessBoard::generateMoves(Moves moves)
     auto startMove = &moves.move[0];
     auto currentMove = startMove;
     uint64_t board;
-    
-    state->color == WHITE ? board = getWhitePiecesBoard() : board = getBlackPiecesBoard();
+    Color oppositeColor = oppositeColor(state->color);
 
-    uint64_t tempBoard[NUMBER_OF_PIECES];
+    state->color == WHITE ? board = getWhitePiecesBoard() : board = getBlackPiecesBoard();
 
     while (board)
     {
         auto actualPiecePos = nextSquare(&board);
-        if (actualPiecePos < 0 || actualPiecePos > NUMBER_OF_SQUARES)
-        {
-            std::cout << "illegal position";
-        }
-        auto tmpBoard = allPieceMoves(actualPiecePos);
+        Piece movingPiece;
+        auto tmpBoard = allPieceMoves(actualPiecePos, &movingPiece);
 
-        if (tmpBoard != 0)
+        int endPos;
+
+        while ((endPos = nextSquare(&tmpBoard)) < NUMBER_OF_SQUARES)
         {
-            int endPos;
-            while ((endPos = nextSquare(&tmpBoard)) < NUMBER_OF_SQUARES)
+            currentMove->start = (Position)actualPiecePos;
+            currentMove->end = (Position)endPos;
+            currentMove->promotion = NUMBER_OF_PIECES;
+            currentMove->enpassant = NUMBER_OF_SQUARES;
+            currentMove->captured = getPieceAt((Position)endPos);
+
+            uint64_t tempMovingBoard;
+            uint64_t tempCapturedBoard = 0;
+            uint64_t *capturedBoard;
+
+            // this move is an enpassant move?
+            if (state->enpassant != NUMBER_OF_SQUARES && currentMove->end == state->enpassant && (movingPiece == P || movingPiece == p))
             {
-                Piece movingPiece = getPieceAt((Position)actualPiecePos);
-                currentMove->start = (Position)actualPiecePos;
-                currentMove->end = (Position)endPos;
-                currentMove->promotion = NUMBER_OF_PIECES;
-                currentMove->enpassant = NUMBER_OF_SQUARES;
-                currentMove->captured = getPieceAt((Position)endPos);
+                currentMove->enpassant = state->enpassant;
+                auto hitPosition = (state->color == BLACK) ? state->enpassant + 8 : state->enpassant - 8;
+                currentMove->captured = getPieceAt((Position)hitPosition);
+                // remove enassant
+                capturedBoard = &state->boards[currentMove->captured];
+                tempCapturedBoard = *capturedBoard;
+                *capturedBoard &= ~(1LLU << hitPosition);
+            }
+            else if (currentMove->captured != NUMBER_OF_PIECES)
+            {
+                capturedBoard = &state->boards[currentMove->captured];
+                tempCapturedBoard = *capturedBoard;
+                // normal capture - remove captured piece
+                *capturedBoard &= ~(1LLU << currentMove->end);
+            }
 
+            // do move
+            auto &movingBoard = state->boards[movingPiece];
+            tempMovingBoard = movingBoard;
+            // move a general piece
+            movingBoard ^= (1LLU << currentMove->start);
+            movingBoard |= 1LLU << currentMove->end;
+
+            auto kingPos = state->color == WHITE ? getPiecePos(K) : getPiecePos(k);
+
+            // is in check?
+            if (!isSqareAttacked(kingPos, &state->boards[0], oppositeColor))
+            {
+                // Promotion?
+                // white pawn on the rank H - black pawn on the rank A?
                 auto piecerank = rank(currentMove->end);
 
-                memcpy(&tempBoard, &state->boards[0], sizeof(uint64_t) * NUMBER_OF_PIECES);
-
-                // this move is an enpassant move?
-                if ((movingPiece == P || movingPiece == p) && currentMove->end == state->enpassant)
+                if ((piecerank == 7 && movingPiece == P) |
+                    (piecerank == 0 && movingPiece == p))
                 {
-                    currentMove->enpassant = state->enpassant;
-                    auto hitPosition = (state->color == BLACK) ? state->enpassant + 8 : state->enpassant - 8;
-                    currentMove->captured = getPieceAt((Position)hitPosition);
-                    auto &capturedBoard = state->boards[currentMove->captured];
-                    capturedBoard &= ~(1LLU << hitPosition);
-                }
-
-                // do move
-                auto &movingBoard = state->boards[movingPiece];
-
-                if (currentMove->captured != NUMBER_OF_PIECES)
-                {
-                    auto &capturedBoard = state->boards[currentMove->captured];
-                    // normal capture - remove captured piece
-                    capturedBoard &= ~(1LLU << currentMove->end);
-                }
-                // move a general piece
-                movingBoard ^= (1LLU << currentMove->start);
-                movingBoard |= 1LLU << currentMove->end;
-
-                auto oppositeKingPos = state->color == WHITE ? getPiecePos(K) : getPiecePos(k);
-
-                // is in check?
-                if (!isSqareAttacked(oppositeKingPos, &state->boards[0], oppositeColor(state->color)))
-                {
-                    // Promotion?
-                    // white pawn on the rank H - black pawn on the rank A?
-                    if ((piecerank == 7 && movingPiece == P) |
-                        (piecerank == 0 && movingPiece == p))
-                    {
-                        Piece captured = currentMove->captured;
-                        // generate all the 4 possible promotions
-                        currentMove->promotion = (Piece)(R + state->color);
-                        currentMove->captured = captured;
-                        currentMove->enpassant = NUMBER_OF_SQUARES;
-                        currentMove++;
-                        currentMove->start = (Position)actualPiecePos;
-                        currentMove->end = (Position)endPos;
-                        currentMove->promotion = (Piece)(N + state->color);
-                        currentMove->captured = captured;
-                        currentMove->enpassant = NUMBER_OF_SQUARES;
-                        currentMove++;
-                        currentMove->start = (Position)actualPiecePos;
-                        currentMove->end = (Position)endPos;
-                        currentMove->promotion = (Piece)(B + state->color);
-                        currentMove->captured = captured;
-                        currentMove->enpassant = NUMBER_OF_SQUARES;
-                        currentMove++;
-                        currentMove->start = (Position)actualPiecePos;
-                        currentMove->end = (Position)endPos;
-                        currentMove->promotion = (Piece)(Q + state->color);
-                        currentMove->captured = captured;
-                        currentMove->enpassant = NUMBER_OF_SQUARES;
-                    }
-                    // save currentmove
+                    Piece captured = currentMove->captured;
+                    // generate all the 4 possible promotions
+                    currentMove->promotion = (Piece)(R + state->color);
+                    currentMove->captured = captured;
+                    currentMove->enpassant = NUMBER_OF_SQUARES;
                     currentMove++;
+                    currentMove->start = (Position)actualPiecePos;
+                    currentMove->end = (Position)endPos;
+                    currentMove->promotion = (Piece)(N + state->color);
+                    currentMove->captured = captured;
+                    currentMove->enpassant = NUMBER_OF_SQUARES;
+                    currentMove++;
+                    currentMove->start = (Position)actualPiecePos;
+                    currentMove->end = (Position)endPos;
+                    currentMove->promotion = (Piece)(B + state->color);
+                    currentMove->captured = captured;
+                    currentMove->enpassant = NUMBER_OF_SQUARES;
+                    currentMove++;
+                    currentMove->start = (Position)actualPiecePos;
+                    currentMove->end = (Position)endPos;
+                    currentMove->promotion = (Piece)(Q + state->color);
+                    currentMove->captured = captured;
+                    currentMove->enpassant = NUMBER_OF_SQUARES;
                 }
-                else
-                {
-                    perftChecks++;
-                }
-                // restore board
-                memcpy(&state->boards[0], &tempBoard, sizeof(uint64_t) * NUMBER_OF_PIECES);
+                // save currentmove
+                currentMove++;
+            }
+            else
+            {
+                perftChecks++;
+            }
+            // restore board
+            movingBoard = tempMovingBoard;
+            // restore captured piece
+            if (tempCapturedBoard != 0)
+            {
+                *capturedBoard = tempCapturedBoard;
             }
         }
     }
@@ -873,15 +878,15 @@ Position ChessBoard::getPiecePos(Piece piece)
     return (Position)index;
 }
 
-uint64_t ChessBoard::allPieceMoves(Position pos)
+uint64_t ChessBoard::allPieceMoves(Position pos, Piece *movingPiece)
 {
-    Piece piece = getPieceAt((Position)pos);
+    *movingPiece = getPieceAt((Position)pos);
 
     uint64_t notOwnPieces;
     uint64_t oppositePieces;
     Position oppositeKingPos;
 
-    switch (piece)
+    switch (*movingPiece)
     {
     case N:
     case n:
