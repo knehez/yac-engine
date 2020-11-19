@@ -97,10 +97,9 @@ std::string Node::to_string_node()
     std::stringstream sout;
     auto curMove = ChessBoard::to_string(currentMove);
 
-    sout << (parent != nullptr ? ChessBoard::to_string(currentMove) : "") << "\\n"
+    sout << (parent != nullptr ? ChessBoard::to_string(currentMove) : "") << "\\n" 
          << "W/V: " << wins << "/" << visits << "\\n"
-         << "UTC: " << utcScore << "\\n"
-         << "log: " << (parent != nullptr ? std::to_string(std::sqrt(2.0 * std::log(double(parent->visits)) / visits)) : "");
+         << "UTC: " << utcScore << "\\n";
     return sout.str();
 }
 
@@ -133,12 +132,12 @@ std::string Node::tree_to_dot(int max_depth, int indent)
     int index = 0;
     for (auto child : children)
     {
-        if (index++ > 4)
+        if (index++ > 2)
         {
-            break;
+            //break;
         }
         s += child->tree_to_dot(max_depth, indent + 1);
-        s += parent + " -> " + parent + ChessBoard::to_string(child->currentMove) + "\n";
+        s += parent + " -> " + parent + ChessBoard::to_string(child->currentMove) + "[label = \"" + ChessBoard::to_string(child->currentMove) + "\"]" + "\n";
     }
 
     matchMoves.pop_back();

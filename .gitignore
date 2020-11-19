@@ -45,3 +45,5 @@ yarn-error.log
 Thumbs.db
 dist-server/
 fenResult.txt
+
+arena_engine/

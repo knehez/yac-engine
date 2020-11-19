@@ -170,8 +170,13 @@ Move Engine::goMCTS(int maxIterations)
 
     /*std::cout << root.get()->tree_to_string();
     std::cout << "-------------------------";*/
-    // std::cout << root.get()->tree_to_dot();
-
+    std::cout << "digraph G {\n";
+    std::cout << "rankdir=LR;\n";
+    std::cout << "edge [lblstyle=\"above, sloped\"]\n";
+    std::cout << "node [shape=\"box\"]\n";
+    std::cout << root.get()->tree_to_dot();
+    std::cout << "}\n";
+    
     return root.get()->children[0]->currentMove;
 }
 
