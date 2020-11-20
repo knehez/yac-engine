@@ -16,7 +16,7 @@ endif()
 add_executable(${BINARY}_run ${SOURCES})
 
 # remove tests libs to avoid multiple main()
-list(REMOVE_ITEM CONAN_LIBS gmock_main gmock gtest gmock_maind gmockd gtestd)
+list(REMOVE_ITEM ${BINARY}_lib gmock_main gmock gtest gmock_maind gmockd gtestd)
 
 add_library(${BINARY}_lib STATIC ${SOURCES})
 
