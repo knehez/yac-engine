@@ -36,13 +36,15 @@ private:
 };
 
 Node::Node(Move move, Moves moves, Node *parent, Color playerColor)
-    : currentMove(move),
-      parent(parent),
-      playerToMove(playerColor),
+    : parent(parent),
+      moves(moves),
+      currentMove(move),
       wins(0),
       visits(0),
-      moves(moves),
-      utcScore(0) {}
+      playerToMove(playerColor),
+      utcScore(0)
+{
+}
 
 Node::~Node()
 {
@@ -97,7 +99,7 @@ std::string Node::to_string_node()
     std::stringstream sout;
     auto curMove = ChessBoard::to_string(currentMove);
 
-    sout << (parent != nullptr ? ChessBoard::to_string(currentMove) : "") << "\\n" 
+    sout << (parent != nullptr ? ChessBoard::to_string(currentMove) : "") << "\\n"
          << "W/V: " << wins << "/" << visits << "\\n"
          << "UTC: " << utcScore << "\\n";
     return sout.str();

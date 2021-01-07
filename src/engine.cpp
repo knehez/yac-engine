@@ -257,7 +257,6 @@ NodeStatistics Engine::monteCarloSearch(const char *fen, Move startingMove)
 
 void Engine::monteCarloSimulation(int depth, bool &isMateFound, float &value)
 {
-    uint64_t count = 0;
     Moves moves;
 
     moves = board.generateMoves(moves);
