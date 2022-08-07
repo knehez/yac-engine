@@ -35,6 +35,6 @@ void perft()
 	engine.setFENCode("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
 	auto p = engine.perft(6);
 	auto endtime = std::chrono::high_resolution_clock::now();
-	std::chrono::duration<double, std::milli> elapsed = endtime - start;
-	std::cout << "time: " << elapsed.count();
+	auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(endtime - start);
+	std::cout << "moves: " << p << " time: " << duration.count() << " ms" << std::endl;
 }
