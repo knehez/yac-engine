@@ -2,7 +2,7 @@
 
 #include <string>
 #include "util.h"
-#include "gtest/gtest_prod.h"
+#include <gtest/gtest_prod.h>
 #include <vector>
 #include <iostream>
 #include <fstream>

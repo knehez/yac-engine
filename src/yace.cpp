@@ -30,10 +30,11 @@ int main(int argc, char **argv)
 
 void perft()
 {
-	double time = -chrono();
+	auto start = std::chrono::high_resolution_clock::now();
 	Engine engine;
 	engine.setFENCode("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
 	auto p = engine.perft(6);
-	time += chrono();
-	std::cout << time << " " << std::fixed << std::showpoint << p / time;
+	auto endtime = std::chrono::high_resolution_clock::now();
+	std::chrono::duration<double, std::milli> elapsed = endtime - start;
+	std::cout << "time: " << elapsed.count();
 }

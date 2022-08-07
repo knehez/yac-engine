@@ -18,7 +18,7 @@ See .travis.yml for installation details.
     cd lib
     git clone https://github.com/google/googletest.git
     cd googletest
-    git checkout tags/release-1.10.0
+    git checkout tags/release-1.12.0
 
 **3.) Build from source and launch tests**
 

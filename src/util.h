@@ -53,8 +53,6 @@ void trimWhiteSpaces(std::string &str);
 
 #define rank(p) (p >> 3);
 
-double chrono(void);
-
 enum Castling
 {
     CASTLING_WHITE_KINGSIDE = 1,

@@ -1,24 +1,41 @@
 set(BINARY ${CMAKE_PROJECT_NAME})
+find_package(GTest CONFIG REQUIRED)
+enable_testing()
 
-include_directories(../lib/googletest/googletest/include ../lib/googletest/googletest/src)
+file(GLOB_RECURSE SOURCES ${PROJECT_SOURCE_DIR}/src false *.h *.cpp)
 
-file(GLOB_RECURSE SOURCES LIST_DIRECTORIES true *.h *.cpp)
+file(GLOB_RECURSE TEST_SOURCES ${PROJECT_SOURCE_DIR}/src false *.h *.cpp)
 
-set(SOURCES ${SOURCES})
+# exclude main.cpp from testing (prevents duplicated main() problem)
+list(FILTER TEST_SOURCES EXCLUDE REGEX ".*main.cpp$")
+# create a lib for unit testing
+add_library(${BINARY}_lib STATIC ${TEST_SOURCES})
 
-# remove tests libs to avoid multiple main()
-list(REMOVE_ITEM CONAN_LIBS gmock_main gmock gtest gmock_maind gmockd gtestd)
+add_executable(${BINARY} ${SOURCES})
+# MESSAGE(FATAL "********************* ${VCPKG_INSTALLED_DIR} ***************")
 
-if (COVERALLS)
-	coveralls_setup(
-        "${SOURCES}" 
-        ${COVERALLS_UPLOAD}                 
-        "${PROJECT_SOURCE_DIR}/coveralls-cmake/cmake")
-endif()
+find_path(GTEST_INCLUDE_DIR gtest.h)
 
-add_executable(${BINARY}_run ${SOURCES})
+target_include_directories(${BINARY} PRIVATE ${VCPKG_INSTALLED_DIR}/arm64-osx/include)
+target_include_directories(${BINARY}_lib PRIVATE ${VCPKG_INSTALLED_DIR}/arm64-osx/include)
 
-add_library(${BINARY}_lib STATIC ${SOURCES})
+
+if(CMAKE_CXX_COMPILER_ID MATCHES "MSVC")
+        target_compile_options(${BINARY} PRIVATE -openmp:llvm -openmp:experimental)
+        target_compile_options(${BINARY} PRIVATE /fp:fast)
+        target_compile_options(${BINARY} PRIVATE /arch:AVX2)
+endif()    
+
+if(CMAKE_CXX_COMPILER_ID MATCHES "CLANG")
+        target_compile_options(${BINARY} PRIVATE -fp:fast)
+        target_compile_options(${BINARY} PRIVATE -march:native)
+endif() 
+
+if(CMAKE_CXX_COMPILER_ID MATCHES "GNU")
+        target_link_libraries(${BINARY} PRIVATE X11 Xext)
+        target_compile_options(${BINARY} PRIVATE -fopenmp)
+endif()     
+
 
 # extra warnings
 #target_compile_options(${BINARY}_lib PRIVATE -Werror -Wall -Wextra)
