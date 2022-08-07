@@ -12,12 +12,9 @@ list(FILTER TEST_SOURCES EXCLUDE REGEX ".*main.cpp$")
 add_library(${BINARY}_lib STATIC ${TEST_SOURCES})
 
 add_executable(${BINARY} ${SOURCES})
-# MESSAGE(FATAL "********************* ${VCPKG_INSTALLED_DIR} ***************")
 
-find_path(GTEST_INCLUDE_DIR gtest.h)
-
-target_include_directories(${BINARY} PRIVATE ${VCPKG_INSTALLED_DIR}/arm64-osx/include)
-target_include_directories(${BINARY}_lib PRIVATE ${VCPKG_INSTALLED_DIR}/arm64-osx/include)
+target_include_directories(${BINARY} PRIVATE ${VCPKG_INSTALLED_DIR}/${VCPKG_TARGET_TRIPLET}/include)
+target_include_directories(${BINARY}_lib PRIVATE ${VCPKG_INSTALLED_DIR}/${VCPKG_TARGET_TRIPLET}/include)
 
 
 if(CMAKE_CXX_COMPILER_ID MATCHES "MSVC")
