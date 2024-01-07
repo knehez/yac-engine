@@ -2,6 +2,7 @@
 
 #include <stdint.h>
 #include <string>
+#include <chrono>
 
 #define MAX_BOARD_MOVEMENTS 1024
 

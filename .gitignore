@@ -47,3 +47,5 @@ dist-server/
 fenResult.txt
 
 arena_engine/
+vcpkg_installed/
+vcpkg/

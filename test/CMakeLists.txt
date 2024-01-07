@@ -1,6 +1,7 @@
 enable_testing()
-find_package(GTest CONFIG REQUIRED)
+
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/modules/")
+
 
 # eliminate cxx_std_11 invlid flag problem
 set_target_properties(GTest::gtest PROPERTIES INTERFACE_COMPILE_FEATURES "")

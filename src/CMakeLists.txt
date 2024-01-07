@@ -1,6 +1,4 @@
 set(BINARY ${CMAKE_PROJECT_NAME})
-find_package(GTest CONFIG REQUIRED)
-enable_testing()
 
 file(GLOB_RECURSE SOURCES ${PROJECT_SOURCE_DIR}/src false *.h *.cpp)
 

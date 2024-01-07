@@ -1,9 +1,32 @@
 cmake_minimum_required(VERSION 3.5)
+
+set(VCPKG_PATH "${CMAKE_CURRENT_SOURCE_DIR}/vcpkg" CACHE PATH "vcpkg folder")
+set(VCPKG_BRANCH "master" CACHE STRING "vcpkg branch to checkout if not present")
+
+find_package(Git QUIET)
+if(NOT EXISTS "${VCPKG_PATH}")
+    option(GIT_SUBMODULE "Check submodules during build" ON)
+        message(STATUS "Submodule update")
+        execute_process(COMMAND ${GIT_EXECUTABLE} clone -b "${VCPKG_BRANCH}" --single-branch  https://github.com/microsoft/vcpkg "${VCPKG_PATH}"
+                        WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+                        )
+        execute_process(COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/vcpkg/bootstrap-vcpkg.bat
+                        WORKING_DIRECTORY ${VCPKG_PATH}
+                        )
+endif()
+
+execute_process(COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/vcpkg/vcpkg install 
+                        WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/vcpkg
+                        )
+
+set(CMAKE_TOOLCHAIN_FILE "${VCPKG_PATH}/scripts/buildsystems/vcpkg.cmake" CACHE STRING "Vcpkg toolchain file")
+
+
 project(yace VERSION 1.0
              DESCRIPTION "Yet Another Chess Engine"
              LANGUAGES CXX)
 
-
+find_package(GTest CONFIG REQUIRED)
 find_package(Threads)
 find_package(OpenMP)
 
@@ -40,6 +63,5 @@ endif()
 include_directories(src)
 include(CTest)
 
-enable_testing()
 add_subdirectory(src)
 add_subdirectory(test)

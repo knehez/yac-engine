@@ -1,7 +1,6 @@
 #include "util.h"
 #include <time.h>
 #include <string>
-#include <chrono>
 
 #if _WIN64
 #include <intrin.h>
