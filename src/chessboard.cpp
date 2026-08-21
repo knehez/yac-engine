@@ -607,6 +607,12 @@ bool ChessBoard::isMate()
     }
 }
 
+bool ChessBoard::isInCheck()
+{
+    const auto kingPosition = state->color == WHITE ? getPiecePos(K) : getPiecePos(k);
+    return isSqareAttacked(kingPosition, &state->boards[0], oppositeColor(state->color));
+}
+
 bool ChessBoard::isStaleMate()
 {
     Moves m;
@@ -684,6 +690,14 @@ Moves ChessBoard::generateMoves(Moves moves)
             currentMove->promotion = NUMBER_OF_PIECES;
             currentMove->enpassant = NUMBER_OF_SQUARES;
             currentMove->captured = getPieceAt((Position)endPos);
+
+            // Checkmate ends the game; a king is never a capturable piece.
+            // Keeping king captures out of pseudo-legal moves also prevents
+            // invalid rollout positions from losing their king bitboard.
+            if (currentMove->captured == K || currentMove->captured == k)
+            {
+                continue;
+            }
 
             uint64_t tempMovingBoard;
             uint64_t tempCapturedBoard = 0;
@@ -855,8 +869,15 @@ Moves ChessBoard::generateMoves(Moves moves)
 
 bool ChessBoard::isSqareAttacked(Position square, uint64_t *board, Color oppositeColor)
 {
+    if (square >= NUMBER_OF_SQUARES)
+    {
+        // A missing king is an invalid and therefore unsafe position. More
+        // importantly, never index the precomputed move masks with 64.
+        return true;
+    }
     auto oppositeKnights = board[N + oppositeColor];
     auto oppositePawns = board[P + oppositeColor];
+    auto oppositeKing = board[K + oppositeColor];
     auto oppositeRookQueen = board[Q + oppositeColor];
     auto oppositeBishopQueen = oppositeRookQueen;
     oppositeRookQueen |= board[R + oppositeColor];
@@ -864,6 +885,7 @@ bool ChessBoard::isSqareAttacked(Position square, uint64_t *board, Color opposit
 
     return (knightMoves(square) & oppositeKnights) |
            ((oppositeColor == WHITE ? pawnBlackHitMoves(square) : pawnWhiteHitMoves(square)) & oppositePawns) |
+           (kingMoves(square) & oppositeKing) |
            (bishopMoves(square) & oppositeBishopQueen) |
            (rookMoves(square) & oppositeRookQueen);
 }

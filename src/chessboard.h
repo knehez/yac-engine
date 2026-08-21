@@ -52,6 +52,7 @@ public:
 
     bool isMate();
     bool isStaleMate();
+    bool isInCheck();
     Color getColor();
     void clearBoard();
     std::string showOneBitBoard(uint64_t board, int startPos = a1, int endPos = h8);
