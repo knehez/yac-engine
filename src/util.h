@@ -180,6 +180,8 @@ typedef struct move
     Position enpassant = NUMBER_OF_SQUARES;
 } Move;
 
+bool operator==(const Move &left, const Move &right);
+
 enum
 {
     MAX_MOVES = 256

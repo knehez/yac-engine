@@ -394,3 +394,20 @@ TEST(moveTest, PromotionAndHitBug)
     EXPECT_EQ(to_string(moves), "f1e1|f1g1|f1e2|f1f2|f1g2|c4b2|c4d2|c4a3|c4e3|c4a5|c4e5|c4b6|c4d6|");
 }
 
+TEST(moveTest, KingsAttackEachOtherAndCannotBeCaptured)
+{
+    ChessBoard board;
+    board.setFENCode("8/8/8/8/8/4k3/4K3/8 w - - 0 1");
+
+    EXPECT_TRUE(board.isInCheck());
+    EXPECT_EQ(board.getPiecePos(Q), NUMBER_OF_SQUARES);
+
+    Moves storage;
+    const Moves moves = board.generateMoves(storage);
+    for (int index = 0; index < moves.length; ++index)
+    {
+        EXPECT_NE(ChessBoard::to_string(moves.move[index]), "e2e3");
+        EXPECT_NE(moves.move[index].captured, k);
+    }
+}
+

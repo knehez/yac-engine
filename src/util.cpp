@@ -21,6 +21,10 @@ int countPiecesOnBoard(uint64_t board)
 
 Position bitScan64(uint64_t board)
 {
+    if (board == 0)
+    {
+        return NUMBER_OF_SQUARES;
+    }
 #if _WIN64
     unsigned long index;
     _BitScanForward64(&index, board);
