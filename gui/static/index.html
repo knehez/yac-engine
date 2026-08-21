@@ -1,0 +1,152 @@
+<!doctype html>
+<html lang="hu">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#17231d">
+  <title>YaC Studio — UCI sakkasztal</title>
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+  <div class="grain" aria-hidden="true"></div>
+  <header class="masthead">
+    <div>
+      <p class="eyebrow">Yet Another Chess Engine · UCI console</p>
+      <h1>YaC <i>Studio</i></h1>
+    </div>
+    <div class="engine-state" id="engine-state"><span></span> motor kapcsolódik…</div>
+  </header>
+
+  <main class="workspace">
+    <section class="board-column" aria-label="Sakktábla">
+      <div class="turn-ribbon">
+        <span id="turn-label">Világos következik</span>
+        <button class="text-button" id="flip-button" type="button">↻ Tábla fordítása</button>
+      </div>
+      <div class="board-shell">
+        <div id="board" class="board" role="grid" aria-label="Interaktív sakktábla"></div>
+      </div>
+      <div class="board-actions">
+        <button class="button primary" id="engine-move-button" type="button">
+          <span class="button-kicker">UCI</span> Motor lépjen
+        </button>
+        <button class="button" id="undo-button" type="button">Vissza</button>
+        <button class="button" id="new-button" type="button">Új játszma</button>
+      </div>
+    </section>
+
+    <aside class="analysis-column">
+      <section class="panel analysis-panel">
+        <div class="panel-heading">
+          <div>
+            <p class="section-number">01 / Elemzés</p>
+            <h2>MCTS műszerfal</h2>
+          </div>
+          <span class="evaluation" id="evaluation">0.00</span>
+        </div>
+        <div class="eval-track" aria-label="Pozícióértékelés">
+          <div class="eval-marker" id="eval-marker"></div>
+        </div>
+        <div class="analysis-readout">
+          <div><small>Javaslat</small><strong id="best-move">—</strong></div>
+          <div><small>Bejárt csomópont</small><strong id="node-count">—</strong></div>
+          <div><small>Állapot</small><strong id="position-state">betöltés</strong></div>
+        </div>
+        <div class="candidate-heading">
+          <span>Legjobb jelöltek</span>
+          <small>A lépő fél szemszögéből</small>
+        </div>
+        <div class="candidate-table-wrap">
+          <table class="candidate-table">
+            <thead><tr><th>#</th><th>Lépés</th><th>Pont</th><th>AI-prior</th><th>Látogatás</th><th></th></tr></thead>
+            <tbody id="candidate-list">
+              <tr class="candidate-empty"><td colspan="6">Indíts elemzést a rangsorhoz.</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <label class="range-label" for="iterations">
+          <span>Keresési keret</span><output id="iteration-output">2 000</output>
+        </label>
+        <input id="iterations" type="range" min="100" max="200000" step="100" value="2000">
+        <label class="range-label" for="exploration">
+          <span>Felfedezés</span><output id="exploration-output">1,50</output>
+        </label>
+        <input id="exploration" type="range" min="0.25" max="5" step="0.25" value="1.5"
+               aria-describedby="exploration-help">
+        <p class="control-help" id="exploration-help">Nagyobb érték több keresési időt ad a ritkábban vizsgált lépéseknek.</p>
+        <div class="policy-controls">
+          <div class="policy-heading">
+            <div><strong>Tanuló MCTS-policy</strong><small id="policy-status">még nincs tanított modell</small></div>
+            <span class="ai-badge">AI</span>
+          </div>
+          <label class="check-control"><input id="learned-policy" type="checkbox"> Tanult prior használata</label>
+          <label class="check-control"><input id="policy-learning" type="checkbox"> Megbízható elemzések gyűjtése</label>
+          <p class="control-help policy-help">Mintát stabil, legalább 100 000 csomópontos keresés vagy bizonyított matt ad. A tanítás 50 új minta után indul.</p>
+          <div class="policy-actions">
+            <button class="text-button" id="train-policy-button" type="button">Tanítás most</button>
+            <button class="text-button danger" id="reset-policy-button" type="button">Modell törlése</button>
+          </div>
+        </div>
+        <div class="split-actions">
+          <button class="button primary" id="analyze-button" type="button">Pozíció elemzése</button>
+          <button class="button" id="play-best-button" type="button" disabled>Javaslat kijátszása</button>
+        </div>
+      </section>
+
+      <section class="panel fen-panel">
+        <div class="panel-heading compact">
+          <div>
+            <p class="section-number">02 / Pozíciólabor</p>
+            <h2>FEN</h2>
+          </div>
+          <button class="text-button" id="copy-fen-button" type="button">Másolás</button>
+        </div>
+        <textarea id="fen-input" rows="3" spellcheck="false" aria-label="FEN pozíció"></textarea>
+        <div class="split-actions">
+          <button class="button primary" id="load-fen-button" type="button">FEN betöltése</button>
+          <button class="button" id="quick-eval-button" type="button">Gyors érték</button>
+        </div>
+        <div class="presets" aria-label="Példaállások">
+          <button type="button" data-preset="start">Kezdőállás</button>
+          <button type="button" data-preset="mate6">Matt 6-ban</button>
+          <button type="button" data-preset="kiwipete">Kiwipete</button>
+        </div>
+        <div class="puzzle-lab">
+          <div class="puzzle-lab-heading">
+            <div><strong>Lichess-feladványtár</strong><small id="puzzle-source">helyi importált állások</small></div>
+            <span class="ai-badge">CC0</span>
+          </div>
+          <button class="button" id="random-puzzle-button" type="button">Véletlen állás betöltése</button>
+          <div class="puzzle-solution" id="puzzle-solution" hidden>
+            <span>Megoldás: <strong id="puzzle-best-move">elrejtve</strong></span>
+            <button class="text-button" id="reveal-puzzle-button" type="button">Felfedés</button>
+          </div>
+        </div>
+      </section>
+
+      <section class="panel moves-panel">
+        <div class="panel-heading compact">
+          <div>
+            <p class="section-number">03 / Jegyzőkönyv</p>
+            <h2>Lépések</h2>
+          </div>
+          <span id="legal-count">0 legális</span>
+        </div>
+        <ol id="move-list" class="move-list"><li class="empty">Még nincs lépés.</li></ol>
+      </section>
+    </aside>
+  </main>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <dialog id="promotion-dialog">
+    <form method="dialog">
+      <p class="section-number">Gyalogátváltozás</p>
+      <h2>Válassz tisztet</h2>
+      <div id="promotion-options" class="promotion-options"></div>
+      <button class="text-button" value="cancel">Mégse</button>
+    </form>
+  </dialog>
+
+  <script src="/app.js" defer></script>
+</body>
+</html>
