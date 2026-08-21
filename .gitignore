@@ -49,3 +49,14 @@ fenResult.txt
 arena_engine/
 vcpkg_installed/
 vcpkg/
+
+# Python GUI tooling
+__pycache__/
+*.pyc
+
+# Locally learned MCTS policy
+yac_policy.model
+yac_policy.samples
+yac_lichess_import.sqlite3
+yac_policy_benchmark.sqlite3
+yac_selfplay.sqlite3
